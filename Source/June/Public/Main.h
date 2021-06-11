@@ -101,6 +101,8 @@ public:
 	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category = "Inventory")
 	int32 Inventory_Capacity;
 	/************************ 무기 ************************/
+	UFUNCTION(Server,Reliable,WithValidation)
+	
 	bool bFire;
 	
 	UFUNCTION()

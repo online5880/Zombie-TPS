@@ -3,7 +3,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-
 #include "GetText_Interface.h"
 #include "Item_Data_Struct.h"
 #include "Interact_Interface.h"

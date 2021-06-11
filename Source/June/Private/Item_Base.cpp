@@ -24,7 +24,6 @@ AItem_Base::AItem_Base()
 	static ConstructorHelpers::FObjectFinder<UMaterialInterface>
 	Outline(TEXT("Material'/Game/Blueprint/Outline.Outline'"));
 	if(Outline.Succeeded()) { Outline_Material = Outline.Object; }
-
 }
 
 // Called when the game starts or when spawned
@@ -34,10 +33,6 @@ void AItem_Base::BeginPlay()
 	
 	AActor* Actor = UGameplayStatics::GetPlayerCharacter(GetWorld(),0);
 	Main = Cast<AMain>(Actor);
-	
-	// Test
-	// Test2
-	
 }
 
 // Called every frame
