@@ -35,6 +35,8 @@ void AItem_Base::BeginPlay()
 	AActor* Actor = UGameplayStatics::GetPlayerCharacter(GetWorld(),0);
 	Main = Cast<AMain>(Actor);
 	
+	// Test
+	
 }
 
 // Called every frame
