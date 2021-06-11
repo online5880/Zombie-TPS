@@ -36,6 +36,7 @@ void AItem_Base::BeginPlay()
 	Main = Cast<AMain>(Actor);
 	
 	// Test
+	// Test2
 	
 }
 
