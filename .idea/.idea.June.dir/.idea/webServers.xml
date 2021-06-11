@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebServers">
+    <option name="servers">
+      <webServer id="b422a221-e74a-4e02-a0e0-97fbdd9699f6" name="Create new server" url="http://localhost">
+        <fileTransfer mountedRoot="C:\Users\MANE\Desktop\June\Binaries\Win64" accessType="MOUNT" port="0" />
+      </webServer>
+    </option>
+  </component>
+</project>
