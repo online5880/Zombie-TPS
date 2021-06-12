@@ -120,6 +120,16 @@ void AMain::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 	PlayerInputComponent->BindAxis("LookUp",this,&AMain::LookUp);
 }
 
+void AMain::ServerWalk_Start_Implementation()
+{
+	GEngine->AddOnScreenDebugMessage(-1,1.5f,FColor::Red,FString::Printf(TEXT("ServerWalk_Start_Implementation"),false));
+}
+
+bool AMain::ServerWalk_Start_Validate()
+{
+	return true;
+}
+
 
 void AMain::MoveForward(float Value)
 {
@@ -163,11 +173,14 @@ void AMain::Jump_End()
 
 void AMain::Walk_Start() 
 {
+	bWalking = true;
 	GetCharacterMovement()->MaxWalkSpeed = 200.f;
+	ServerWalk_Start();
 }
 
 void AMain::Walk_End() 
 {
+	bWalking = false;
 	GetCharacterMovement()->MaxWalkSpeed = 600.f;
 }
 
