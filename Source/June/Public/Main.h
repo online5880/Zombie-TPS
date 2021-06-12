@@ -158,7 +158,7 @@ public:
 	/************************ 라이플 ************************/
 	void Equip_Rifle(); // 라이플 장착
 
-	UPROPERTY(BlueprintReadOnly)
+	UPROPERTY(EditAnywhere,BlueprintReadOnly)
 	bool bEquip_Rifle; // 라이플 장착 확인
 
 	FTimerHandle Rifle_Timer;

@@ -10,6 +10,7 @@
 #include "Sound/SoundBase.h"
 #include "NiagaraComponent.h"
 #include "NiagaraFunctionLibrary.h"
+#include "Net/UnrealNetwork.h"
 
 // Sets default values
 AWeapon_Base::AWeapon_Base()
@@ -39,7 +40,7 @@ void AWeapon_Base::BeginPlay()
 {
 	Super::BeginPlay();
 
-	AActor* Actor = UGameplayStatics::GetPlayerPawn(GetWorld(),0);
+	AActor* Actor = UGameplayStatics::GetActorOfClass(GetWorld(),TSubActor);
 	Main = Cast<AMain>(Actor);
 }
 
@@ -73,7 +74,6 @@ void AWeapon_Base::Fire()
 	}
 	else
 	{
-		GEngine->AddOnScreenDebugMessage(-1,1.5f,FColor::Red,FString::Printf(TEXT("총알 없음"),false));
 		AudioComponent->SetSound(Rifle_Empty_Cue);
 		AudioComponent->Play();
 	}

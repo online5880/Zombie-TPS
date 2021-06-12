@@ -42,6 +42,7 @@ public:
 	EItem_Type Item_Type;
 	/************************ 머터리얼 ***********************/
 	class UMaterialInterface* Outline_Material;
+	/************************ 서버 ***********************/
 
 protected:
 	// Called when the game starts or when spawned

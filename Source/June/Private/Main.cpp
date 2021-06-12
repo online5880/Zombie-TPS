@@ -121,10 +121,7 @@ void AMain::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 	PlayerInputComponent->BindAxis("LookUp",this,&AMain::LookUp);
 }
 /******************************************************** 서버 ********************************************************/
-bool AMain::ServerWalk_Start_Validate()
-{
-	return true;
-}
+bool AMain::ServerWalk_Start_Validate(){return true;}
 
 void AMain::ServerWalk_Start_Implementation()
 {
@@ -132,10 +129,7 @@ void AMain::ServerWalk_Start_Implementation()
 	GetCharacterMovement()->MaxWalkSpeed = 200.f;
 }
 
-bool AMain::ServerWalk_End_Validate()
-{
-	return true;
-}
+bool AMain::ServerWalk_End_Validate(){return true;}
 
 void AMain::ServerWalk_End_Implementation()
 {
@@ -143,26 +137,19 @@ void AMain::ServerWalk_End_Implementation()
 	GetCharacterMovement()->MaxWalkSpeed = 600.f;
 }
 
-bool AMain::ServerSprint_Start_Validate()
-{
-	return true;
-}
+bool AMain::ServerSprint_Start_Validate(){return true;}
 
 void AMain::ServerSprint_Start_Implementation()
 {
 	GetCharacterMovement()->MaxWalkSpeed = 700.f;
 }
 
-bool AMain::ServerSprint_End_Validate()
-{
-	return true;
-}
+bool AMain::ServerSprint_End_Validate(){return true;}
 
 void AMain::ServerSprint_End_Implementation()
 {
 	GetCharacterMovement()->MaxWalkSpeed = 600.f;
 }
-
 /******************************************************** 행동 ********************************************************/
 void AMain::MoveForward(float Value)
 {

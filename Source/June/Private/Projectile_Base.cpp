@@ -11,6 +11,8 @@ AProjectile_Base::AProjectile_Base()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 
+	SetReplicates(true);
+
 	CapsuleComponent = CreateDefaultSubobject<UCapsuleComponent>(TEXT("Capsule Component"));
 	CapsuleComponent->SetCollisionObjectType(ECC_PhysicsBody);
 	

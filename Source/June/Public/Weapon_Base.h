@@ -71,6 +71,8 @@ public:
 	class USoundCue* Rifle_Reload_Cue;
 	/************************ 나이아가라 ***********************/
 	class UNiagaraSystem* Rifle_Muzzle_Niagara;
+	/************************ 서버 ***********************/
+
 	
 protected:
 	// Called when the game starts or when spawned
@@ -85,5 +87,10 @@ public:
 	virtual FString Get_Name() override;
 
 	class AMain* Main;
+
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<AMain> TSubActor;
+
+	class AActor* Target;
 
 };
