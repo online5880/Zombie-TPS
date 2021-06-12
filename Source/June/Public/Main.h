@@ -59,11 +59,11 @@ public:
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-	/************************ Server ************************/
+	/*/************************ Server ***********************#1#
 	UFUNCTION(Reliable,Server,WithValidation)
 	void ServerWalk_Start(); //// 걷기
 	void ServerWalk_Start_Implementation();
-	bool ServerWalk_Start_Validate();
+	bool ServerWalk_Start_Validate();*/
 	/************************ 행동 ************************/
 	UFUNCTION()
 	void MoveForward(float Value); ////// 속도
