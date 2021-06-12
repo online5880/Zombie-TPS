@@ -20,7 +20,8 @@ AMain::AMain()
 
 	bEquip_Rifle = false;
 	bAiming = false;
-	bFouse = false;
+	bFocus = false;
+	bWalking = false;
 	
 	SpringArmComponent = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
 	SpringArmComponent->SetupAttachment(RootComponent);
@@ -119,18 +120,50 @@ void AMain::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 	PlayerInputComponent->BindAxis("Turn",this,&AMain::Turn);
 	PlayerInputComponent->BindAxis("LookUp",this,&AMain::LookUp);
 }
-
-/*void AMain::ServerWalk_Start_Implementation()
-{
-	GEngine->AddOnScreenDebugMessage(-1,1.5f,FColor::Red,FString::Printf(TEXT("ServerWalk_Start_Implementation"),false));
-}
-
+/******************************************************** 서버 ********************************************************/
 bool AMain::ServerWalk_Start_Validate()
 {
 	return true;
-}*/
+}
 
+void AMain::ServerWalk_Start_Implementation()
+{
+	bWalking = true;
+	GetCharacterMovement()->MaxWalkSpeed = 200.f;
+}
 
+bool AMain::ServerWalk_End_Validate()
+{
+	return true;
+}
+
+void AMain::ServerWalk_End_Implementation()
+{
+	bWalking = false;
+	GetCharacterMovement()->MaxWalkSpeed = 600.f;
+}
+
+bool AMain::ServerSprint_Start_Validate()
+{
+	return true;
+}
+
+void AMain::ServerSprint_Start_Implementation()
+{
+	GetCharacterMovement()->MaxWalkSpeed = 700.f;
+}
+
+bool AMain::ServerSprint_End_Validate()
+{
+	return true;
+}
+
+void AMain::ServerSprint_End_Implementation()
+{
+	GetCharacterMovement()->MaxWalkSpeed = 600.f;
+}
+
+/******************************************************** 행동 ********************************************************/
 void AMain::MoveForward(float Value)
 {
 	FVector Direction = FRotationMatrix(Controller->GetControlRotation()).GetScaledAxis(EAxis::X);
@@ -175,23 +208,38 @@ void AMain::Walk_Start()
 {
 	bWalking = true;
 	GetCharacterMovement()->MaxWalkSpeed = 200.f;
-	//ServerWalk_Start();
+	if(!HasAuthority())
+	{
+		ServerWalk_Start();
+	}
 }
 
 void AMain::Walk_End() 
 {
 	bWalking = false;
 	GetCharacterMovement()->MaxWalkSpeed = 600.f;
+	if(!HasAuthority())
+	{
+		ServerWalk_End();
+	}
 }
 
 void AMain::Sprint_Start() 
 {
 	GetCharacterMovement()->MaxWalkSpeed = 700.f;
+	if(!HasAuthority())
+	{
+		ServerSprint_Start();
+	}
 }
 
 void AMain::Sprint_End() 
 {
 	GetCharacterMovement()->MaxWalkSpeed = 600.f;
+	if(!HasAuthority())
+	{
+		ServerSprint_End();
+	}
 }
 
 FHitResult AMain::LineTraceSingle(const FVector& StartLocation, const FVector& EndLocation)
@@ -219,11 +267,11 @@ void AMain::LineTrace()
 		{
 			FString Actor_Name = Interface->Get_Name();
 			Get_Actor_Name(FText::FromString(Actor_Name));
-			bFouse = true;
+			bFocus = true;
 		}
-		else { Get_Actor_Name(FText::FromString("")); bFouse = false; }
+		else { Get_Actor_Name(FText::FromString("")); bFocus = false; }
 	}
-	else { Get_Actor_Name(FText::FromString("")) ; bFouse = false; }
+	else { Get_Actor_Name(FText::FromString("")) ; bFocus = false; }
 }
 
 void AMain::Interact()
@@ -244,7 +292,7 @@ void AMain::Interact()
 		}
 	}
 }
-
+/******************************************************** 무기 ********************************************************/
 void AMain::Fire()
 {
 	if(bFire)

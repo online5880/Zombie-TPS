@@ -59,11 +59,26 @@ public:
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-	/*/************************ Server ***********************#1#
-	UFUNCTION(Reliable,Server,WithValidation)
-	void ServerWalk_Start(); //// 걷기
+	/************************ 서버 ************************/
+	UFUNCTION(Server,Unreliable,WithValidation)
+	void ServerWalk_Start();
+	bool ServerWalk_Start_Validate();
 	void ServerWalk_Start_Implementation();
-	bool ServerWalk_Start_Validate();*/
+
+	UFUNCTION(Server,Unreliable,WithValidation)
+	void ServerWalk_End();
+	bool ServerWalk_End_Validate();
+	void ServerWalk_End_Implementation();
+
+	UFUNCTION(Server,Unreliable,WithValidation)
+	void ServerSprint_Start();
+	bool ServerSprint_Start_Validate();
+	void ServerSprint_Start_Implementation();
+
+	UFUNCTION(Server,Unreliable,WithValidation)
+	void ServerSprint_End();
+	bool ServerSprint_End_Validate();
+	void ServerSprint_End_Implementation();
 	/************************ 행동 ************************/
 	UFUNCTION()
 	void MoveForward(float Value); ////// 속도
@@ -81,7 +96,7 @@ public:
 
 	UPROPERTY(VisibleAnywhere,Category="Movement")
 	bool bJump;
-
+	
 	void Walk_Start(); //// 걷기
 	
 	void Walk_End();
@@ -103,13 +118,11 @@ public:
 
 	void Interact(); // 상호작용
 
-	bool bFouse;
+	bool bFocus;
 	/************************ 인벤토리 ************************/
 	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category = "Inventory")
 	int32 Inventory_Capacity;
 	/************************ 무기 ************************/
-	UFUNCTION(Server,Reliable,WithValidation)
-	
 	bool bFire;
 	
 	UFUNCTION()
