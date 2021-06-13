@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 
+#include "Grenade.h"
 #include "Weapon_Base.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/Character.h"
@@ -164,17 +165,32 @@ public:
 	FTimerHandle Rifle_Timer;
 
 	FTimerHandle Rifle_Fire_Timer;
+	/************************ 수류탄 ************************/
+	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category = "Weapon")
+	TSubclassOf<AGrenade> Grenade;
+
+	void Throw_Ready();
+
+	void Throw();
+
+	UFUNCTION(BlueprintCallable)
+	void Spawn_Grenade();
 	/************************ 애니메이션 ************************/
 	class UMain_AnimInstance* AnimInstance;
 	
-	UAnimMontage* Equip_Rifle_Montage; // 라이플 장착
+	UAnimMontage* Equip_Rifle_Montage; ///라이플 장착
  
-	UAnimMontage* UnEquip_Rifle_Montage; // 라이플 넣기
+	UAnimMontage* UnEquip_Rifle_Montage; /// 라이플 넣기
 
-	UAnimMontage* Rifle_Aiming_Montage; // 라이플 조준
+	UAnimMontage* Rifle_Aiming_Montage; /// 라이플 조준
 
-	UAnimMontage* Rifle_Firing_Montage; // 라이플 사격
+	UAnimMontage* Rifle_Firing_Montage; /// 라이플 사격
 
-	UAnimMontage* Rifle_Relaoding_Montage; // 라이플 장전
+	UAnimMontage* Rifle_Relaoding_Montage; /// 라이플 장전
 
+	UAnimMontage* Throw_Loop; /// 수류탄 준비
+
+	UAnimMontage* Throw_Far; /// 수류탄 멀리
+
+	UAnimMontage* Throw_Close; /// 수류탄 가까이
 };

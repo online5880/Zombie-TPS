@@ -65,6 +65,24 @@ AMain::AMain()
 	{
 		Rifle_Relaoding_Montage = Rifle_Reload.Object;
 	}
+	static ConstructorHelpers::FObjectFinder<UAnimMontage>
+	Grenade_Ready(TEXT("AnimMontage'/Game/Main/Anim/Rifle/IP/Rifle_Grenade_Throw_Loop_Montage.Rifle_Grenade_Throw_Loop_Montage'"));
+	if(Grenade_Ready.Succeeded())
+	{
+		Throw_Loop = Grenade_Ready.Object;
+	}
+	static ConstructorHelpers::FObjectFinder<UAnimMontage>
+	Grenade_Far(TEXT("AnimMontage'/Game/Main/Anim/Rifle/IP/Rifle_Grenade_Throw_Far_Montage.Rifle_Grenade_Throw_Far_Montage'"));
+	if(Grenade_Far.Succeeded())
+	{
+		Throw_Far = Grenade_Far.Object;
+	}
+	static ConstructorHelpers::FObjectFinder<UAnimMontage>
+	Grenade_Close(TEXT("AnimMontage'/Game/Main/Anim/Rifle/IP/Rifle_Grenade_Throw_Close_Montage.Rifle_Grenade_Throw_Close_Montage'"));
+	if(Grenade_Close.Succeeded())
+	{
+		Throw_Close = Grenade_Close.Object;
+	}
 }
 // Called when the game starts or when spawned
 void AMain::BeginPlay()
@@ -105,6 +123,8 @@ void AMain::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 	PlayerInputComponent->BindAction("Aiming",IE_Pressed,this,&AMain::Aiming);
 	PlayerInputComponent->BindAction("Aiming",IE_Released,this,&AMain::Aiming_End);
 	PlayerInputComponent->BindAction("Reload",IE_Pressed,this,&AMain::Reload);
+	PlayerInputComponent->BindAction("Grenade",IE_Pressed,this,&AMain::Throw_Ready);
+	PlayerInputComponent->BindAction("Grenade",IE_Released,this,&AMain::Throw);
 
 	PlayerInputComponent->BindAction("Jump",IE_Pressed,this,&AMain::Jump_Start);
 	//PlayerInputComponent->BindAction("Jump",IE_Released,this,&AMain::Jump_End);
@@ -279,7 +299,7 @@ void AMain::Interact()
 		}
 	}
 }
-/******************************************************** 무기 ********************************************************/
+/******************************************************** 라이플 ********************************************************/
 void AMain::Fire()
 {
 	if(bFire)
@@ -331,11 +351,11 @@ void AMain::Aiming_End()
 
 void AMain::Reload()
 {
-	if(Weapon_Base->Ammo != Weapon_Base->MaxAmmo && Weapon_Base->HaveAmmo != 0)
+	switch (Weapon_State)
 	{
-		switch (Weapon_State)
+	case EState::Rifle:
+		if(Weapon_Base->Ammo != Weapon_Base->MaxAmmo && Weapon_Base->HaveAmmo != 0)
 		{
-		case EState::Rifle:
 			if(!bFire && !bAiming && !bReloading)
 			{
 				AnimInstance->Montage_Play(Rifle_Relaoding_Montage);
@@ -411,6 +431,42 @@ void AMain::Equip_Rifle()
 			},0.5f,false);
 		}
 	}
+}
+/******************************************************** 수류탄 ********************************************************/
+void AMain::Throw_Ready()
+{
+	if(AnimInstance)
+	{
+		if(!AnimInstance->IsAnyMontagePlaying() && Get_Weapon_State() == EState::Rifle)
+		{
+			AnimInstance->Montage_Play(Throw_Loop);
+		}
+	}
+}
+
+void AMain::Throw()
+{
+	if(AnimInstance)
+	{
+		if(AnimInstance->Montage_IsPlaying(Throw_Loop))
+		{
+			float Distance = GetControlRotation().Pitch;
+			if(Distance < 180.f)
+			{
+				AnimInstance->Montage_Play(Throw_Far);
+			}
+			else
+			{
+				AnimInstance->Montage_Play(Throw_Close);
+			}
+		}
+	}
+}
+
+void AMain::Spawn_Grenade()
+{
+	FVector Location = GetMesh()->GetSocketLocation(FName("Grenade_Socket"));
+	GetWorld()->SpawnActor<AGrenade>(Grenade,Location,GetControlRotation());
 }
 
 
