@@ -19,10 +19,9 @@ AWeapon_Base::AWeapon_Base()
 	PrimaryActorTick.bCanEverTick = true;
 
 	Body_Mesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Body Mesh"));
-	RootComponent = Body_Mesh;
-
 	Body_Mesh->SetCollisionResponseToChannel(ECC_Pawn,ECR_Ignore);
-
+	RootComponent = Body_Mesh;
+	
 	AudioComponent = CreateDefaultSubobject<UAudioComponent>(TEXT("Audio Component"));
 	AudioComponent->bAutoActivate = false;
 	AudioComponent->SetupAttachment(RootComponent);
@@ -97,7 +96,6 @@ void AWeapon_Base::Fire_Start()
 	if(bool Line = GetWorld()->LineTraceSingleByChannel(OutHit,StartLocation,EndLocation,ECC_Visibility,CollisionParams))
 	{
 		FVector Socket_Location = Body_Mesh->GetSocketLocation(FName("Bullet_Socket"));
-		Body_Mesh->GetSocketRotation(FName("Bullet_Socket"));
 		FVector Select_Vector = UKismetMathLibrary::SelectVector(OutHit.ImpactPoint,OutHit.TraceEnd,Line);
 		FRotator Find_Rot = UKismetMathLibrary::FindLookAtRotation(Socket_Location,Select_Vector);
 		GetWorld()->SpawnActor<AProjectile_Base>(Bullet,Socket_Location,Find_Rot);

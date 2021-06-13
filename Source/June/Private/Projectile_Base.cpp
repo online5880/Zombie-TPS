@@ -15,6 +15,7 @@ AProjectile_Base::AProjectile_Base()
 
 	CapsuleComponent = CreateDefaultSubobject<UCapsuleComponent>(TEXT("Capsule Component"));
 	CapsuleComponent->SetCollisionObjectType(ECC_PhysicsBody);
+	//CapsuleComponent->SetRelativeRotation(FRotator(0.f,-90.f,0.f));
 	
 	CapsuleComponent->SetCapsuleHalfHeight(3.f);
 	CapsuleComponent->SetCapsuleRadius(0.5f);
@@ -22,7 +23,7 @@ AProjectile_Base::AProjectile_Base()
 
 	Bullet = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Bullet"));
 	Bullet->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	Bullet->SetRelativeRotation(FRotator(0.f,-90.f,0.f));
+	//Bullet->SetRelativeRotation(FRotator(0.f,-90.f,0.f));
 
 	ProjectileMovementComponent = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("Projectile"));
 
