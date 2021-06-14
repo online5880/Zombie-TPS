@@ -119,6 +119,7 @@ public:
 
 	void Interact(); // 상호작용
 
+	UPROPERTY(BlueprintReadOnly)
 	bool bFocus;
 	/************************ 인벤토리 ************************/
 	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category = "Inventory")
@@ -168,6 +169,9 @@ public:
 	/************************ 수류탄 ************************/
 	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category = "Weapon")
 	TSubclassOf<AGrenade> Grenade;
+
+	UPROPERTY(BlueprintReadOnly)
+	bool bGrenade;
 
 	void Throw_Ready();
 

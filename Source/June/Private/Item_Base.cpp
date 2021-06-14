@@ -32,6 +32,8 @@ AItem_Base::AItem_Base()
 void AItem_Base::BeginPlay()
 {
 	Super::BeginPlay();
+
+	Outline();
 	
 	AActor* Actor = UGameplayStatics::GetPlayerCharacter(GetWorld(),0);
 	Main = Cast<AMain>(Actor);

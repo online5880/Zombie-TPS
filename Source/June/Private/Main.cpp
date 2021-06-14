@@ -22,6 +22,7 @@ AMain::AMain()
 	bAiming = false;
 	bFocus = false;
 	bWalking = false;
+	bGrenade = false;
 	
 	SpringArmComponent = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
 	SpringArmComponent->SetupAttachment(RootComponent);
@@ -334,7 +335,7 @@ void AMain::Aiming()
 	switch (Weapon_State)
 	{
 	case EState::Rifle:
-		if(!AnimInstance->IsAnyMontagePlaying() && Weapon_Base && !bAiming && !bReloading)
+		if(!AnimInstance->IsAnyMontagePlaying() && Weapon_Base && !bAiming && !bReloading && !bGrenade)
 		{
 			AnimInstance->Montage_Play(Rifle_Aiming_Montage);
 			bAiming = true;
@@ -435,11 +436,12 @@ void AMain::Equip_Rifle()
 /******************************************************** 수류탄 ********************************************************/
 void AMain::Throw_Ready()
 {
-	if(AnimInstance)
+	if(AnimInstance && !bGrenade)
 	{
 		if(!AnimInstance->IsAnyMontagePlaying() && Get_Weapon_State() == EState::Rifle)
 		{
 			AnimInstance->Montage_Play(Throw_Loop);
+			bGrenade = true;
 		}
 	}
 }
@@ -450,6 +452,7 @@ void AMain::Throw()
 	{
 		if(AnimInstance->Montage_IsPlaying(Throw_Loop))
 		{
+			bGrenade = false;
 			float Distance = GetControlRotation().Pitch;
 			if(Distance < 180.f)
 			{
@@ -467,6 +470,7 @@ void AMain::Spawn_Grenade()
 {
 	FVector Location = GetMesh()->GetSocketLocation(FName("Grenade_Socket"));
 	GetWorld()->SpawnActor<AGrenade>(Grenade,Location,GetControlRotation());
+	
 }
 
 

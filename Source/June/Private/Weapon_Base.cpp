@@ -86,6 +86,8 @@ void AWeapon_Base::Fire_Start()
 	
 	FVector ForwardVector = UKismetMathLibrary::GetForwardVector(Main->CameraComponent->GetComponentRotation());
 	FVector EndLocation = (Camera_Location+(ForwardVector * 20000.f));
+
+	GetWorld()->GetFirstPlayerController()->PlayerCameraManager->StartMatineeCameraShake(CameraShake,1.0f,ECameraShakePlaySpace::CameraLocal,FRotator::ZeroRotator);
 		
 	FHitResult OutHit;
 	
@@ -101,8 +103,6 @@ void AWeapon_Base::Fire_Start()
 		GetWorld()->SpawnActor<AProjectile_Base>(Bullet,Socket_Location,Find_Rot);
 
 		UNiagaraFunctionLibrary::SpawnSystemAttached(Rifle_Muzzle_Niagara,Body_Mesh,FName("b_gun_muzzleflash"),FVector::ZeroVector,FRotator::ZeroRotator,EAttachLocation::KeepRelativeOffset,true,true);
-
-		GetWorld()->GetFirstPlayerController()->PlayerCameraManager->StartMatineeCameraShake(CameraShake,1.0f,ECameraShakePlaySpace::CameraLocal,FRotator::ZeroRotator);
 		//DrawDebugLine(GetWorld(),StartLocation,EndLocation,FColor::Red,true,0.f);
 	}		
 }
