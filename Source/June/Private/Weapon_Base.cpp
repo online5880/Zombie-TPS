@@ -32,8 +32,58 @@ AWeapon_Base::AWeapon_Base()
 	{
 		Rifle_Muzzle_Niagara = Rifle_Muzzle.Object;
 	}
+	/************************ 데칼 - 피 ************************/
+	static ConstructorHelpers::FObjectFinder<UMaterialInterface>
+	Blood_1(TEXT("MaterialInstanceConstant'/Game/BloodPack/4096x4096/Dots/MI_Dots_Decal_1.MI_Dots_Decal_1'"));
+	if(Blood_1.Succeeded())
+	{
+		Blood_Decal[0] = Blood_1.Object;
+	}
+	static ConstructorHelpers::FObjectFinder<UMaterialInterface>
+    Blood_2(TEXT("MaterialInstanceConstant'/Game/BloodPack/4096x4096/Dots/MI_Dots_Decal_23.MI_Dots_Decal_23'"));
+	if(Blood_2.Succeeded())
+	{
+		Blood_Decal[1] = Blood_2.Object;
+	}
+	static ConstructorHelpers::FObjectFinder<UMaterialInterface>
+    Blood_3(TEXT("MaterialInstanceConstant'/Game/BloodPack/4096x4096/Dots/MI_Dots_Decal_24.MI_Dots_Decal_24'"));
+	if(Blood_3.Succeeded())
+	{
+		Blood_Decal[2] = Blood_3.Object;
+	}
+	static ConstructorHelpers::FObjectFinder<UMaterialInterface>
+    Blood_4(TEXT("MaterialInstanceConstant'/Game/BloodPack/4096x4096/Dots/MI_Dots_Decal_25.MI_Dots_Decal_25'"));
+	
+	if(Blood_4.Succeeded())
+	{
+		Blood_Decal[3] = Blood_4.Object;
+	}
+	static ConstructorHelpers::FObjectFinder<UMaterialInterface>
+    Blood_5(TEXT("MaterialInstanceConstant'/Game/BloodPack/4096x4096/Dots/MI_Dots_Decal_5.MI_Dots_Decal_5'"));
+	if(Blood_5.Succeeded())
+	{
+		Blood_Decal[4] = Blood_5.Object;
+	}
+	//////////////////////////////// 땅
+	static ConstructorHelpers::FObjectFinder<UMaterialInterface>
+    Blood_6(TEXT("MaterialInstanceConstant'/Game/BloodPack/4096x4096/Dots/MI_Dots_Decal_6.MI_Dots_Decal_6'"));
+	if(Blood_6.Succeeded())
+	{
+		Blood_Decal[5] = Blood_6.Object;
+	}
+	static ConstructorHelpers::FObjectFinder<UMaterialInterface>
+    Blood_7(TEXT("MaterialInstanceConstant'/Game/BloodPack/4096x4096/Dots/MI_Dots_Decal_8.MI_Dots_Decal_8'"));
+	if(Blood_7.Succeeded())
+	{
+		Blood_Decal[6] = Blood_7.Object;
+	}
+	static ConstructorHelpers::FObjectFinder<UMaterialInterface>
+    Blood_8(TEXT("MaterialInstanceConstant'/Game/BloodPack/4096x4096/Dots/MI_Dots_Decal_22.MI_Dots_Decal_22'"));
+	if(Blood_8.Succeeded())
+	{
+		Blood_Decal[7] = Blood_8.Object;
+	}
 }
-
 // Called when the game starts or when spawned
 void AWeapon_Base::BeginPlay()
 {
@@ -78,6 +128,25 @@ void AWeapon_Base::Fire()
 	}
 }
 
+void AWeapon_Base::Blood_Splatter_Decal(FVector Start, FVector End)
+{
+	int32 Wall_Random = FMath::RandRange(0,4);
+	FVector Wall_Blood_Size = (FVector(64.f,128.f,128.f));
+	FRotator Wall_Blood_Rotate = FRotator(0.f,0.f,UKismetMathLibrary::RandomFloatInRange(0.f,360.f));
+	
+	FHitResult OutHit;
+	FCollisionQueryParams CollisionParams;
+	CollisionParams.AddIgnoredActor(this);
+	CollisionParams.AddIgnoredActor(Main);
+
+	bool IsHit = GetWorld()->LineTraceSingleByChannel(OutHit,Start,End,ECC_Visibility,CollisionParams);
+	if(IsHit)
+	{
+		UGameplayStatics::SpawnDecalAtLocation(this,Blood_Decal[Wall_Random],Wall_Blood_Size,OutHit.ImpactPoint,Wall_Blood_Rotate,5.f);
+		//UE_LOG(LogTemp,Warning,TEXT("2차 벽 튀김"))
+	}
+}
+
 void AWeapon_Base::Fire_Start()
 {
 	FVector Camera_Location = Main->CameraComponent->GetComponentLocation();
@@ -94,13 +163,25 @@ void AWeapon_Base::Fire_Start()
 	FCollisionQueryParams CollisionParams;
 	CollisionParams.AddIgnoredActor(this);
 	CollisionParams.AddIgnoredActor(Main);
+
+	int32 Ground_Random = FMath::RandRange(5,7);
+	FVector Ground_Blood_Size = (FVector(172.f,172.f,172.f));
+	FRotator Ground_Blood_Rotate = FRotator(UKismetMathLibrary::RandomFloatInRange(-45.f,-90.f),0.f,0.f);
 		
 	if(bool Line = GetWorld()->LineTraceSingleByChannel(OutHit,StartLocation,EndLocation,ECC_Visibility,CollisionParams))
 	{
-		GetWorld()->SpawnActor<AProjectile_Base>(Bullet,StartLocation,Main->GetControlRotation());
+		FVector End_Blood = (OutHit.ImpactPoint+(Start_Vector*200.f));
+
+		FVector Z_Location = OutHit.GetActor()->GetActorLocation();
+		FVector Literal_Location = FVector(Z_Location.X,Z_Location.Y,0.f);
 		
+		GetWorld()->SpawnActor<AProjectile_Base>(Bullet,StartLocation,Main->GetControlRotation());
+		if(OutHit.GetActor()->ActorHasTag("Zombie"))
+		{
+			UGameplayStatics::SpawnDecalAtLocation(this,Blood_Decal[Ground_Random],Ground_Blood_Size,Literal_Location,Ground_Blood_Rotate,12.f);
+			Blood_Splatter_Decal(OutHit.ImpactPoint,End_Blood);
+		}
 		UNiagaraFunctionLibrary::SpawnSystemAttached(Rifle_Muzzle_Niagara,Body_Mesh,FName("b_gun_muzzleflash"),FVector::ZeroVector,FRotator::ZeroRotator,EAttachLocation::KeepRelativeOffset,true,true);
-		//DrawDebugLine(GetWorld(),StartLocation,EndLocation,FColor::Red,false,3.f);
 	}		
 }
 

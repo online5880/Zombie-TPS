@@ -71,6 +71,10 @@ public:
 	class USoundCue* Rifle_Reload_Cue;
 	/************************ 나이아가라 ***********************/
 	class UNiagaraSystem* Rifle_Muzzle_Niagara;
+	/************************ 피 ***********************/
+	void Blood_Splatter_Decal(FVector Start, FVector End);
+
+	class UMaterialInterface* Blood_Decal[12];
 	/************************ 서버 ***********************/
 
 	

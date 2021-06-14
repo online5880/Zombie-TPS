@@ -22,7 +22,7 @@ AMain::AMain()
 	bAiming = false;
 	bFocus = false;
 	bWalking = false;
-	bGrenade = false;
+	bIsGrenade = false;
 	
 	SpringArmComponent = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
 	SpringArmComponent->SetupAttachment(RootComponent);
@@ -335,7 +335,7 @@ void AMain::Aiming()
 	switch (Weapon_State)
 	{
 	case EState::Rifle:
-		if(!AnimInstance->IsAnyMontagePlaying() && Weapon_Base && !bAiming && !bReloading && !bGrenade)
+		if(!AnimInstance->IsAnyMontagePlaying() && Weapon_Base && !bAiming && !bReloading && !bIsGrenade)
 		{
 			AnimInstance->Montage_Play(Rifle_Aiming_Montage);
 			bAiming = true;
@@ -436,12 +436,12 @@ void AMain::Equip_Rifle()
 /******************************************************** 수류탄 ********************************************************/
 void AMain::Throw_Ready()
 {
-	if(AnimInstance && !bGrenade)
+	if(AnimInstance && !bIsGrenade)
 	{
 		if(!AnimInstance->IsAnyMontagePlaying() && Get_Weapon_State() == EState::Rifle)
 		{
 			AnimInstance->Montage_Play(Throw_Loop);
-			bGrenade = true;
+			bIsGrenade = true;
 		}
 	}
 }
@@ -452,7 +452,7 @@ void AMain::Throw()
 	{
 		if(AnimInstance->Montage_IsPlaying(Throw_Loop))
 		{
-			bGrenade = false;
+			bIsGrenade = false;
 			float Distance = GetControlRotation().Pitch;
 			if(Distance < 180.f)
 			{

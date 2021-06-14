@@ -171,7 +171,7 @@ public:
 	TSubclassOf<AGrenade> Grenade;
 
 	UPROPERTY(BlueprintReadOnly)
-	bool bGrenade;
+	bool bIsGrenade;
 
 	void Throw_Ready();
 
