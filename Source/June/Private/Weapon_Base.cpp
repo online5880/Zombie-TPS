@@ -97,13 +97,10 @@ void AWeapon_Base::Fire_Start()
 		
 	if(bool Line = GetWorld()->LineTraceSingleByChannel(OutHit,StartLocation,EndLocation,ECC_Visibility,CollisionParams))
 	{
-		FVector Socket_Location = Body_Mesh->GetSocketLocation(FName("Bullet_Socket"));
-		FVector Select_Vector = UKismetMathLibrary::SelectVector(OutHit.ImpactPoint,OutHit.TraceEnd,Line);
-		FRotator Find_Rot = UKismetMathLibrary::FindLookAtRotation(Socket_Location,Select_Vector);
-		GetWorld()->SpawnActor<AProjectile_Base>(Bullet,Socket_Location,Find_Rot);
-
+		GetWorld()->SpawnActor<AProjectile_Base>(Bullet,StartLocation,Main->GetControlRotation());
+		
 		UNiagaraFunctionLibrary::SpawnSystemAttached(Rifle_Muzzle_Niagara,Body_Mesh,FName("b_gun_muzzleflash"),FVector::ZeroVector,FRotator::ZeroRotator,EAttachLocation::KeepRelativeOffset,true,true);
-		//DrawDebugLine(GetWorld(),StartLocation,EndLocation,FColor::Red,true,0.f);
+		//DrawDebugLine(GetWorld(),StartLocation,EndLocation,FColor::Red,false,3.f);
 	}		
 }
 

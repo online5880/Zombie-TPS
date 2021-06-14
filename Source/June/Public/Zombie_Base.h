@@ -15,6 +15,9 @@ public:
 	// Sets default values for this character's properties
 	AZombie_Base();
 
+	UPROPERTY(EditAnywhere,BlueprintReadOnly, Category = "Body Mesh")
+	class USkeletalMeshComponent* Body_Mesh;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
