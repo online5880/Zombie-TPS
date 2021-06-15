@@ -34,6 +34,7 @@ void UZombie_AnimInstance::UpdateAnimationProperties()
 		FVector Speed = Pawn->GetVelocity();
 		FVector LateralSpeed = FVector(Speed.X,Speed.Y,0.f);
 		MovementSpeed = LateralSpeed.Size();
+		bDamaged_Leg = Zombie->bDamaged_Leg;
 
 		bIsAir = Pawn->GetMovementComponent()->IsFalling();
 	}

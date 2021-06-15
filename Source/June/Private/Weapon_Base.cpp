@@ -2,7 +2,7 @@
 
 
 #include "Weapon_Base.h"
-
+#include "Main.h"
 #include "DrawDebugHelpers.h"
 #include "Components/AudioComponent.h"
 #include "Kismet/GameplayStatics.h"
@@ -10,6 +10,7 @@
 #include "Sound/SoundBase.h"
 #include "NiagaraComponent.h"
 #include "NiagaraFunctionLibrary.h"
+#include "Zombie_Base.h"
 #include "Net/UnrealNetwork.h"
 
 // Sets default values
@@ -178,8 +179,22 @@ void AWeapon_Base::Fire_Start()
 		GetWorld()->SpawnActor<AProjectile_Base>(Bullet,StartLocation,Main->GetControlRotation());
 		if(OutHit.GetActor()->ActorHasTag("Zombie"))
 		{
-			UGameplayStatics::SpawnDecalAtLocation(this,Blood_Decal[Ground_Random],Ground_Blood_Size,Literal_Location,Ground_Blood_Rotate,12.f);
-			Blood_Splatter_Decal(OutHit.ImpactPoint,End_Blood);
+			class AZombie_Base* Zombie_Base = Cast<AZombie_Base>(OutHit.GetActor());
+			if(Zombie_Base)
+			{
+				UGameplayStatics::SpawnDecalAtLocation(this,Blood_Decal[Ground_Random],Ground_Blood_Size,Literal_Location,Ground_Blood_Rotate,12.f);
+				Blood_Splatter_Decal(OutHit.ImpactPoint,End_Blood);
+				
+				UGameplayStatics::ApplyDamage(Zombie_Base,Rifle_Damage,nullptr,Main,nullptr);
+				if(OutHit.BoneName.ToString()=="Head")
+				{
+					UGameplayStatics::ApplyPointDamage(OutHit.GetActor(),Rifle_Damage*1.5f,OutHit.GetActor()->GetActorLocation(),OutHit,nullptr,this,nullptr);
+				}
+				if(OutHit.BoneName.ToString()=="thigh_l" || OutHit.BoneName.ToString()=="thigh_r")
+				{
+					Zombie_Base->Leg_Health-=50.f;
+				}
+			}
 		}
 		UNiagaraFunctionLibrary::SpawnSystemAttached(Rifle_Muzzle_Niagara,Body_Mesh,FName("b_gun_muzzleflash"),FVector::ZeroVector,FRotator::ZeroRotator,EAttachLocation::KeepRelativeOffset,true,true);
 	}		

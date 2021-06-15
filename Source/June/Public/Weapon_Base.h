@@ -6,13 +6,11 @@
 
 #include "GetText_Interface.h"
 #include "Interact_Interface.h"
-#include "Main.h"
 #include "NiagaraSystem.h"
 #include "Projectile_Base.h"
 #include "Weapon_CameraShake_Base.h"
 #include "GameFramework/Actor.h"
 #include "Sound/SoundCue.h"
-
 #include "Weapon_Base.generated.h"
 
 UCLASS()
@@ -41,6 +39,9 @@ public:
 
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category = "Weapon")
 	int32 HaveAmmo;
+
+	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category = "Weapon")
+	float Rifle_Damage;
 	/************************ 발사 ***********************/
 	void Fire();
 	

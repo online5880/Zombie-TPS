@@ -31,6 +31,9 @@ class JUNE_API UZombie_AnimInstance : public UAnimInstance
 	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category="Movement")
 	bool bIsAir;
 
+	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category="Movement")
+	bool bDamaged_Leg;
+
 	class APawn* Pawn;
 
 	class AZombie_Base* Zombie;
