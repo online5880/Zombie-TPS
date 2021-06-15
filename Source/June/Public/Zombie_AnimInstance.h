@@ -31,6 +31,9 @@ class JUNE_API UZombie_AnimInstance : public UAnimInstance
 	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category="Movement")
 	bool bIsAir;
 
+	UPROPERTY(BlueprintReadOnly, Category = "Movement")
+	int32 Random_Ground;
+
 	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category="Movement")
 	bool bDamaged_Leg;
 

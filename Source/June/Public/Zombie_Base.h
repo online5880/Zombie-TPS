@@ -58,6 +58,12 @@ public:
 	bool bDie;
 
 	void Die();
+
+	FTimerHandle Destroy_Timer;
+
+	void Ragdoll();
+
+	FTimerHandle Ragdoll_Timer;
 	/************************ 사운드 ***********************/
 	UPROPERTY(EditAnywhere)
 	class UAudioComponent* AudioComponent;
@@ -72,16 +78,12 @@ public:
 	/************************ 애니메이션 ***********************/
 	class UZombie_AnimInstance* AnimInstance;
 
-	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category="Anim")
 	class UAnimMontage* React_Montage;
 
-	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category="Anim")
-	class UAnimMontage* Die_Montage;
+	class UAnimMontage* Die_Montage[2];
 
-	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category="Anim")
 	class UAnimMontage* Impact_Die_Montage;
 
-	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category="Anim")
 	class UAnimMontage* Ground_Die_Montage;
 
 protected:

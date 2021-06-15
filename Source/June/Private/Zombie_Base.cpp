@@ -4,8 +4,10 @@
 #include "Zombie_Base.h"
 #include "Zombie_AnimInstance.h"
 #include "Components/AudioComponent.h"
+#include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "Kismet/KismetMathLibrary.h"
 
 // Sets default values
 AZombie_Base::AZombie_Base()
@@ -25,16 +27,28 @@ AZombie_Base::AZombie_Base()
 
 	Tags.Add("Zombie");
 	/************************ 애니메이션 ***********************/
-	/*static ConstructorHelpers::FObjectFinder<UAnimMontage>
-	React(TEXT("AnimMontage'/Game/Zombies/Zombie_1/Anim_Zombie_hit_Montage.Anim_Zombie_hit_Montage'"));
+	static ConstructorHelpers::FObjectFinder<UAnimMontage>
+	React(TEXT("AnimMontage'/Game/Zombies/Zombie_1/Anim/Anim_Zombie_hit_Montage.Anim_Zombie_hit_Montage'"));
 	if(React.Succeeded()) {React_Montage = React.Object;}
 
 	static ConstructorHelpers::FObjectFinder<UAnimMontage>
-	Die(TEXT("AnimMontage'/Game/Zombies/Zombie_1/Anim_Zombie_deathspawn_Montage.Anim_Zombie_deathspawn_Montage'"));
-	if(Die.Succeeded()) {Die_Montage = Die.Object;}
+	Die_1(TEXT("AnimMontage'/Game/Zombies/Zombie_1/Anim/Anim_Zombie_deathspawn_Montage.Anim_Zombie_deathspawn_Montage'"));
+	if(Die_1.Succeeded()) {Die_Montage[0] = Die_1.Object;}
 
 	static ConstructorHelpers::FObjectFinder<UAnimMontage>
-	Impact_Die(TEXT("AnimMontage'/Game/Zombies/Zombie_1/Anim_Zombie_deathimpact_Montage.Anim_Zombie_deathimpact_Montage'"));
+	Die_2(TEXT("AnimMontage'/Game/Zombies/Zombie_1/Anim/ZombieDeath4UE4_Montage.ZombieDeath4UE4_Montage'"));
+	if(Die_2.Succeeded()) {Die_Montage[1] = Die_2.Object;}
+
+	static ConstructorHelpers::FObjectFinder<UAnimMontage>
+	Die_3(TEXT("AnimMontage'/Game/Zombies/Zombie_1/Anim/ZombieDying4UE4_Montage.ZombieDying4UE4_Montage'"));
+	if(Die_3.Succeeded()) {Die_Montage[2] = Die_3.Object;}
+
+	static ConstructorHelpers::FObjectFinder<UAnimMontage>
+	Ground_Die(TEXT("AnimMontage'/Game/Zombies/Zombie_1/Anim/Anim_Zombie_ground-death_Montage.Anim_Zombie_ground-death_Montage'"));
+	if(Ground_Die.Succeeded()) {Ground_Die_Montage = Ground_Die.Object;}
+
+	/*static ConstructorHelpers::FObjectFinder<UAnimMontage>
+	Impact_Die(TEXT("AnimMontage'/Game/Zombies/Zombie_1/Anim/Anim_Zombie_deathimpact_Montage.Anim_Zombie_deathimpact_Montage'"));
 	if(Impact_Die.Succeeded()) {Impact_Die_Montage = Impact_Die.Object;}*/
 	/************************ 사운드 ***********************/
 	static ConstructorHelpers::FObjectFinder<USoundCue>
@@ -111,16 +125,32 @@ void AZombie_Base::Die()
 	GetCharacterMovement()->SetActive(false);
 	if(bDamaged_Leg)
 	{
-		AnimInstance->Montage_Play(Ground_Die_Montage);
+		AnimInstance->Montage_Play(Ground_Die_Montage,0.7f);
 	}
 	else
 	{
-		AnimInstance->Montage_Play(Die_Montage);
+		int32 Rand = UKismetMathLibrary::RandomIntegerInRange(0,2);
+		AnimInstance->Montage_Play(Die_Montage[Rand]);
+		Ragdoll();
 	}
-	FTimerHandle Destroy_Timer;
 	GetWorld()->GetTimerManager().SetTimer(Destroy_Timer,[this]()
 	{
 		Destroy();
-	},3.2f,false);
+		GetWorld()->GetTimerManager().ClearTimer(Destroy_Timer);
+	},10.f,false);
+}
+
+void AZombie_Base::Ragdoll()
+{
+	float Ragdoll_Time = UKismetMathLibrary::RandomFloatInRange(1.5f,2.f);
+	GetWorld()->GetTimerManager().SetTimer(Ragdoll_Timer,[this]()
+	{
+		GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn,ECR_Block);
+		GetMesh()->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
+		GetMesh()->SetSimulatePhysics(true);
+		GetMesh()->SetCollisionObjectType(ECollisionChannel::ECC_PhysicsBody);
+		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
+		GetWorld()->GetTimerManager().ClearTimer(Ragdoll_Timer);
+	},Ragdoll_Time,false);
 }
 
