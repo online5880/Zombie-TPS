@@ -8,7 +8,17 @@ public class June : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 	
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore","Niagara" });
+		PublicDependencyModuleNames.AddRange(new string[]
+		{
+			"Core", 
+			"CoreUObject", 
+			"Engine", 
+			"InputCore",
+			"Niagara",
+			"AIModule",
+			"GameplayTasks",
+			"NavigationSystem",
+		});
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });
 

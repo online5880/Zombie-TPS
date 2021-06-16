@@ -7,7 +7,6 @@
 #include "Sound/SoundCue.h"
 
 #include "Zombie_Base.generated.h"
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FSpawnDecal);
 UENUM(BlueprintType)
 enum class EZobime_State : uint8
 {
@@ -27,9 +26,9 @@ public:
 
 	UPROPERTY(EditAnywhere,BlueprintReadOnly, Category = "Body Mesh")
 	class USkeletalMeshComponent* Body_Mesh;
-
-	UPROPERTY(BlueprintAssignable)
-	FSpawnDecal SpawnDecal;
+	/************************ AI *************************/
+	/*UPROPERTY(EditAnywhere,BlueprintReadOnly,Category ="AI")
+	class UAIPerceptionComponent* Zombie_AIPerception;*/
 	/************************ 정보 *************************/
 	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category = "Status")
 	EZobime_State Zombie_State;

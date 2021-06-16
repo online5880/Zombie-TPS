@@ -2,12 +2,15 @@
 
 
 #include "Zombie_Base.h"
+
+#include "Zombie_AIController.h"
 #include "Zombie_AnimInstance.h"
 #include "Components/AudioComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Perception/AIPerceptionComponent.h"
 
 // Sets default values
 AZombie_Base::AZombie_Base()
@@ -25,6 +28,11 @@ AZombie_Base::AZombie_Base()
 	AudioComponent = CreateDefaultSubobject<UAudioComponent>(TEXT("Audio Component"));
 	AudioComponent->SetActive(false);
 	AudioComponent->SetupAttachment(RootComponent);
+
+	//Zombie_AIPerception = CreateDefaultSubobject<UAIPerceptionComponent>(TEXT("Zombie_AIPerception"));
+
+	AIControllerClass = AZombie_AIController::StaticClass();
+	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
 
 	Tags.Add("Zombie");
 	/************************ 애니메이션 ***********************/
@@ -63,10 +71,6 @@ AZombie_Base::AZombie_Base()
 	static ConstructorHelpers::FObjectFinder<USoundAttenuation>
 	S_Att(TEXT("SoundAttenuation'/Game/Zombies/Zombie_1/Sound/Zombie_Ambi.Zombie_Ambi'"));
 	if(S_Att.Succeeded()) {Zombie_Attenuation = S_Att.Object;}
-
-	/*static ConstructorHelpers::FObjectFinder<USoundCue>
-	S_Die(TEXT("AnimMontage'/Game/Zombies/Zombie_1/Anim_Zombie_deathspawn_Montage.Anim_Zombie_deathspawn_Montage'"));
-	if(S_Die.Succeeded()) {React_Sound = S_Die.Object;}*/
 }
 // Called when the game starts or when spawned
 void AZombie_Base::BeginPlay()
