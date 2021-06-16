@@ -34,8 +34,20 @@ AProjectile_Base::AProjectile_Base()
 		Normal_Impact = Normal.Object;
 	}
 }
+
+void AProjectile_Base::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent,
+	FVector NormalImpulse, const FHitResult& Hit)
+{
+	if(OtherActor != this)
+	{
+		//GEngine->AddOnScreenDebugMessage(-1,1.5f,FColor::Red, FString::Printf(TEXT("Hit Actor : %s"),*Hit.GetActor()->GetName()),false);
+	}
+}
+
 // Called when the game starts or when spawned
 void AProjectile_Base::BeginPlay()
 {
 	Super::BeginPlay();
+
+	CapsuleComponent->OnComponentHit.AddDynamic(this,&AProjectile_Base::OnHit);
 }

@@ -323,7 +323,7 @@ void AMain::Fire_Start()
 void AMain::Fire_End()
 {
 	bFire= false;
-	AnimInstance->Montage_Stop(0.5f,Rifle_Firing_Montage);
+	AnimInstance->Montage_Stop(0.1f,Rifle_Firing_Montage);
 	if(bAiming)
 	{
 		AnimInstance->Montage_Play(Rifle_Aiming_Montage,1.f,EMontagePlayReturnType::MontageLength,3.f);		

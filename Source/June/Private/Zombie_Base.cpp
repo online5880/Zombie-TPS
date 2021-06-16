@@ -20,6 +20,7 @@ AZombie_Base::AZombie_Base()
 	Leg_Health = 100.f;
 	bDamaged_Leg = false;
 	bDie = false;
+	bGrenade_Die = false;
 
 	AudioComponent = CreateDefaultSubobject<UAudioComponent>(TEXT("Audio Component"));
 	AudioComponent->SetActive(false);
@@ -32,24 +33,24 @@ AZombie_Base::AZombie_Base()
 	if(React.Succeeded()) {React_Montage = React.Object;}
 
 	static ConstructorHelpers::FObjectFinder<UAnimMontage>
+	Impact_Die(TEXT("AnimMontage'/Game/Zombies/Zombie_1/Anim/Anim_Zombie_deathimpact_Montage.Anim_Zombie_deathimpact_Montage'"));
+	if(Impact_Die.Succeeded()) {Impact_Die_Montage = Impact_Die.Object;}
+
+	static ConstructorHelpers::FObjectFinder<UAnimMontage>
 	Die_1(TEXT("AnimMontage'/Game/Zombies/Zombie_1/Anim/Anim_Zombie_deathspawn_Montage.Anim_Zombie_deathspawn_Montage'"));
-	if(Die_1.Succeeded()) {Die_Montage[0] = Die_1.Object;}
+	if(Die_1.Succeeded()) {Die_Montage[1] = Die_1.Object;}
 
 	static ConstructorHelpers::FObjectFinder<UAnimMontage>
 	Die_2(TEXT("AnimMontage'/Game/Zombies/Zombie_1/Anim/ZombieDeath4UE4_Montage.ZombieDeath4UE4_Montage'"));
-	if(Die_2.Succeeded()) {Die_Montage[1] = Die_2.Object;}
+	if(Die_2.Succeeded()) {Die_Montage[2] = Die_2.Object;}
 
 	static ConstructorHelpers::FObjectFinder<UAnimMontage>
 	Die_3(TEXT("AnimMontage'/Game/Zombies/Zombie_1/Anim/ZombieDying4UE4_Montage.ZombieDying4UE4_Montage'"));
-	if(Die_3.Succeeded()) {Die_Montage[2] = Die_3.Object;}
+	if(Die_3.Succeeded()) {Die_Montage[3] = Die_3.Object;}
 
 	static ConstructorHelpers::FObjectFinder<UAnimMontage>
 	Ground_Die(TEXT("AnimMontage'/Game/Zombies/Zombie_1/Anim/Anim_Zombie_ground-death_Montage.Anim_Zombie_ground-death_Montage'"));
 	if(Ground_Die.Succeeded()) {Ground_Die_Montage = Ground_Die.Object;}
-
-	/*static ConstructorHelpers::FObjectFinder<UAnimMontage>
-	Impact_Die(TEXT("AnimMontage'/Game/Zombies/Zombie_1/Anim/Anim_Zombie_deathimpact_Montage.Anim_Zombie_deathimpact_Montage'"));
-	if(Impact_Die.Succeeded()) {Impact_Die_Montage = Impact_Die.Object;}*/
 	/************************ 사운드 ***********************/
 	static ConstructorHelpers::FObjectFinder<USoundCue>
 	S_React(TEXT("SoundCue'/Game/Zombies/Zombie_1/Sound/React.React'"));
@@ -102,6 +103,11 @@ float AZombie_Base::TakeDamage(float DamageAmount, FDamageEvent const& DamageEve
 	{
 		Health -= DamageAmount;
 		bDie = true;
+		if(DamageAmount >= 200.f && !bDamaged_Leg)
+		{
+			bGrenade_Die = true;
+			Turn_Target(DamageCauser->GetActorLocation());
+		}
 		Die();
 	}
 	else
@@ -122,16 +128,26 @@ float AZombie_Base::TakeDamage(float DamageAmount, FDamageEvent const& DamageEve
 
 void AZombie_Base::Die()
 {
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	GetCharacterMovement()->SetActive(false);
+	AudioComponent->DestroyComponent();
 	if(bDamaged_Leg)
 	{
 		AnimInstance->Montage_Play(Ground_Die_Montage,0.7f);
 	}
 	else
 	{
-		int32 Rand = UKismetMathLibrary::RandomIntegerInRange(0,2);
-		AnimInstance->Montage_Play(Die_Montage[Rand]);
-		Ragdoll();
+		if(bGrenade_Die)
+		{
+			AnimInstance->Montage_Play(Impact_Die_Montage);
+			Ragdoll(0.25f);
+		}
+		else
+		{
+			int32 Rand = UKismetMathLibrary::RandomIntegerInRange(1,3);
+			AnimInstance->Montage_Play(Die_Montage[Rand]);
+			Ragdoll(0.9f);
+		}
 	}
 	GetWorld()->GetTimerManager().SetTimer(Destroy_Timer,[this]()
 	{
@@ -140,17 +156,21 @@ void AZombie_Base::Die()
 	},10.f,false);
 }
 
-void AZombie_Base::Ragdoll()
+void AZombie_Base::Ragdoll(float Time)
 {
-	float Ragdoll_Time = UKismetMathLibrary::RandomFloatInRange(1.5f,2.f);
 	GetWorld()->GetTimerManager().SetTimer(Ragdoll_Timer,[this]()
 	{
-		GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn,ECR_Block);
+		GetMesh()->SetCollisionResponseToChannel(ECC_Pawn,ECR_Block);
 		GetMesh()->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
 		GetMesh()->SetSimulatePhysics(true);
-		GetMesh()->SetCollisionObjectType(ECollisionChannel::ECC_PhysicsBody);
-		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
+		GetMesh()->SetCollisionObjectType(ECC_PhysicsBody);
 		GetWorld()->GetTimerManager().ClearTimer(Ragdoll_Timer);
-	},Ragdoll_Time,false);
+	},Time,false);
+}
+
+void AZombie_Base::Turn_Target(FVector Target)
+{
+	FRotator Rot = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(),Target);
+	SetActorRotation(Rot);
 }
 

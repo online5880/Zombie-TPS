@@ -7,6 +7,7 @@
 #include "Sound/SoundCue.h"
 
 #include "Zombie_Base.generated.h"
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FSpawnDecal);
 UENUM(BlueprintType)
 enum class EZobime_State : uint8
 {
@@ -26,6 +27,9 @@ public:
 
 	UPROPERTY(EditAnywhere,BlueprintReadOnly, Category = "Body Mesh")
 	class USkeletalMeshComponent* Body_Mesh;
+
+	UPROPERTY(BlueprintAssignable)
+	FSpawnDecal SpawnDecal;
 	/************************ 정보 *************************/
 	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category = "Status")
 	EZobime_State Zombie_State;
@@ -57,13 +61,17 @@ public:
 	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category="Status")
 	bool bDie;
 
+	bool bGrenade_Die;
+
 	void Die();
 
 	FTimerHandle Destroy_Timer;
 
-	void Ragdoll();
+	void Ragdoll(float Time);
 
 	FTimerHandle Ragdoll_Timer;
+
+	void Turn_Target(FVector Target);
 	/************************ 사운드 ***********************/
 	UPROPERTY(EditAnywhere)
 	class UAudioComponent* AudioComponent;
@@ -79,12 +87,12 @@ public:
 	class UZombie_AnimInstance* AnimInstance;
 
 	class UAnimMontage* React_Montage;
-
-	class UAnimMontage* Die_Montage[2];
-
+	
 	class UAnimMontage* Impact_Die_Montage;
 
 	class UAnimMontage* Ground_Die_Montage;
+
+	class UAnimMontage* Die_Montage[3];
 
 protected:
 	// Called when the game starts or when spawned

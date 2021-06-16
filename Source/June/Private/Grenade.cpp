@@ -3,6 +3,9 @@
 
 #include "Grenade.h"
 
+#include "Kismet/GameplayStatics.h"
+#include "Kismet/KismetSystemLibrary.h"
+
 // Sets default values
 AGrenade::AGrenade()
 {
@@ -17,9 +20,19 @@ AGrenade::AGrenade()
 
 }
 
+void AGrenade::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent,
+	FVector NormalImpulse, const FHitResult& Hit)
+{
+	if(OtherActor != this)
+	{
+		//GEngine->AddOnScreenDebugMessage(-1,1.5f,FColor::Red, FString::Printf(TEXT("수류탄")));
+	}
+}
+
 // Called when the game starts or when spawned
 void AGrenade::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
+	Body_Mesh->OnComponentHit.AddDynamic(this,&AGrenade::OnHit);
 }
