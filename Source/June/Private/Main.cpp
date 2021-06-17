@@ -35,6 +35,8 @@ AMain::AMain()
 
 	Health = 50.f;
 	MaxHealth = 100.f;
+
+	Tags.Add("Player");
 	/************************ 애니메이션 ************************/
 	static ConstructorHelpers::FObjectFinder<UAnimMontage>
 	Equip_Rifle(TEXT("AnimMontage'/Game/Main/Anim/Rifle/IP/EquipRifle_Montage.EquipRifle_Montage'"));

@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "AIController.h"
+#include "Zombie_Base.h"
 #include "Perception/AISense_Sight.h"
 
 #include "Zombie_AIController.generated.h"
@@ -26,10 +27,16 @@ class JUNE_API AZombie_AIController : public AAIController
 
 	virtual void OnPossess(APawn* InPawn) override;
 
+	class AZombie_Base* Zombie_Base;
+
 	public:
 	static const FName HomePosKey;
 
 	static const FName PatrolPosKey;
+
+	static const FName TargetKey;
+
+	static const FName TargetLocationKey;
 	/************************ AI *************************/
 
 	

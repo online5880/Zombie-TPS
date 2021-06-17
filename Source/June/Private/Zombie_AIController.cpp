@@ -9,6 +9,8 @@
 
 const FName AZombie_AIController::HomePosKey(TEXT("HomePos"));
 const FName AZombie_AIController::PatrolPosKey(TEXT("PatrolPos"));
+const FName AZombie_AIController::TargetKey(TEXT("Target"));
+const FName AZombie_AIController::TargetLocationKey(TEXT("TargetLocation"));
 
 AZombie_AIController::AZombie_AIController()
 {
@@ -24,6 +26,7 @@ AZombie_AIController::AZombie_AIController()
 void AZombie_AIController::OnPossess(APawn* InPawn)
 {
 	Super::OnPossess(InPawn);
+	
 	RunBehaviorTree(Zombie_BT);
 	if(UseBlackboard(Zombie_BB,Blackboard))
 	{
