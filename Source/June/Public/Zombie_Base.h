@@ -29,6 +29,7 @@ public:
 	/************************ AI *************************/
 	/*UPROPERTY(EditAnywhere,BlueprintReadOnly,Category ="AI")
 	class UAIPerceptionComponent* Zombie_AIPerception;*/
+
 	/************************ 정보 *************************/
 	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category = "Status")
 	EZobime_State Zombie_State;

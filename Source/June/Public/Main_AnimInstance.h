@@ -25,6 +25,9 @@ class JUNE_API UMain_AnimInstance : public UAnimInstance
 	UFUNCTION(BlueprintCallable, Category = AnimationProperties)
 	void UpdateAnimationProperties();
 
+	UFUNCTION(BlueprintCallable)
+	void Footstep();
+
 	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category="Movement")
 	float MovementSpeed;
 
@@ -42,6 +45,12 @@ class JUNE_API UMain_AnimInstance : public UAnimInstance
 
 	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category="Movement")
 	float Controller_Yaw;
+
+	UPROPERTY(EditAnywhere,Category="Step")
+	class USoundCue* Foot_Sound[9];
+
+	UPROPERTY(EditAnywhere,Category="Step")
+	class UNiagaraSystem* Foot_Niagara[9];
 
 	class APawn* Pawn;
 

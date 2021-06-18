@@ -38,6 +38,7 @@ class JUNE_API AZombie_AIController : public AAIController
 
 	static const FName TargetLocationKey;
 	/************************ AI *************************/
+	
 
 	
 };

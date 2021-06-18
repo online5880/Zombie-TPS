@@ -2,15 +2,15 @@
 
 
 #include "Zombie_Base.h"
-
-#include "Zombie_AIController.h"
 #include "Zombie_AnimInstance.h"
+#include "BehaviorTree/BlackboardComponent.h"
 #include "Components/AudioComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Perception/AIPerceptionComponent.h"
+#include "Zombie_AIController.h"
 
 // Sets default values
 AZombie_Base::AZombie_Base()
@@ -29,10 +29,10 @@ AZombie_Base::AZombie_Base()
 	AudioComponent->SetActive(false);
 	AudioComponent->SetupAttachment(RootComponent);
 
-	//Zombie_AIPerception = CreateDefaultSubobject<UAIPerceptionComponent>(TEXT("Zombie_AIPerception"));
-
 	AIControllerClass = AZombie_AIController::StaticClass();
 	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
+
+	//Zombie_AIController = Cast<AZombie_AIController>(GetController());
 
 	Tags.Add("Zombie");
 	/************************ 애니메이션 ***********************/
@@ -76,7 +76,6 @@ AZombie_Base::AZombie_Base()
 void AZombie_Base::BeginPlay()
 {
 	Super::BeginPlay();
-
 	AnimInstance = Cast<UZombie_AnimInstance>(GetMesh()->GetAnimInstance());
 	AudioComponent->SetSound(Idle_Sound);
 	AudioComponent->Play();
@@ -118,6 +117,9 @@ float AZombie_Base::TakeDamage(float DamageAmount, FDamageEvent const& DamageEve
 	{
 		if(!bDie)
 		{
+			/*class AZombie_AIController* Zombie_AIController;
+			Zombie_AIController = Cast<AZombie_AIController>(GetController());*/
+			
 			Health -= DamageAmount;
 			AudioComponent->SetSound(React_Sound);
 			AudioComponent->Play();
@@ -125,6 +127,20 @@ float AZombie_Base::TakeDamage(float DamageAmount, FDamageEvent const& DamageEve
 			{
 				AnimInstance->Montage_Play(React_Montage);
 			}
+			GetCharacterMovement()->MaxWalkSpeed = 300.f;
+
+			//Zombie_AIController->GetBlackboardComponent()->SetValueAsObject(AZombie_AIController::TargetKey,DamageCauser);
+			FTimerHandle Reset_Timer;
+			GetWorld()->GetTimerManager().SetTimer(Reset_Timer,[this]()
+			{
+				
+			},10.f,false);
+			
+			FTimerHandle Speed_Timer;
+			GetWorld()->GetTimerManager().SetTimer(Speed_Timer,[this]()
+			{
+				GetCharacterMovement()->MaxWalkSpeed = 30.f;
+			},10.f,false);
 		}
 	}
 	return DamageAmount;
