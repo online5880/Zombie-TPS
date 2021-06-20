@@ -17,7 +17,7 @@
 AWeapon_Base::AWeapon_Base()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
+	//PrimaryActorTick.bCanEverTick = true;
 
 	Body_Mesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Body Mesh"));
 	Body_Mesh->SetCollisionResponseToChannel(ECC_Pawn,ECR_Ignore);
@@ -93,16 +93,10 @@ void AWeapon_Base::BeginPlay()
 	AActor* Actor = UGameplayStatics::GetActorOfClass(GetWorld(),TSubActor);
 	Main = Cast<AMain>(Actor);
 }
-
-// Called every frame
-void AWeapon_Base::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-}
-
 void AWeapon_Base::Interact()
 {
 	AttachToComponent(Main->GetMesh(),FAttachmentTransformRules::SnapToTargetNotIncludingScale,FName("Rifle_Socket"));
+	Body_Mesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	Weapon_Name = "";
 	AudioComponent->SetSound(Pickup_Sound_Cue);
 	AudioComponent->Play();
@@ -188,7 +182,7 @@ void AWeapon_Base::Fire_Start()
 				UGameplayStatics::ApplyDamage(Zombie_Base,Rifle_Damage,nullptr,Main,nullptr);
 				if(OutHit.BoneName.ToString()=="Head")
 				{
-					UGameplayStatics::ApplyPointDamage(OutHit.GetActor(),Rifle_Damage*1.5f,OutHit.GetActor()->GetActorLocation(),OutHit,nullptr,this,nullptr);
+					UGameplayStatics::ApplyPointDamage(OutHit.GetActor(),Rifle_Damage*1.5f,OutHit.GetActor()->GetActorLocation(),OutHit,nullptr,Main,nullptr);
 				}
 				if(OutHit.BoneName.ToString()=="thigh_l" || OutHit.BoneName.ToString()=="thigh_r")
 				{

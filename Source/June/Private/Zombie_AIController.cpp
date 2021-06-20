@@ -14,6 +14,8 @@ const FName AZombie_AIController::TargetLocationKey(TEXT("TargetLocation"));
 
 AZombie_AIController::AZombie_AIController()
 {
+	PrimaryActorTick.bCanEverTick = true;
+	
 	static ConstructorHelpers::FObjectFinder<UBlackboardData>
 	BB(TEXT("BlackboardData'/Game/Zombies/AI/Zombie_BB.Zombie_BB'"));
 	if(BB.Succeeded()) {Zombie_BB = BB.Object;}
@@ -21,15 +23,24 @@ AZombie_AIController::AZombie_AIController()
 	static ConstructorHelpers::FObjectFinder<UBehaviorTree>
 	BT(TEXT("BehaviorTree'/Game/Zombies/AI/Zombie_BT.Zombie_BT'"));
 	if(BT.Succeeded()) {Zombie_BT = BT.Object;}
+
+	SetGenericTeamId(FGenericTeamId(1));
 }
 
 void AZombie_AIController::OnPossess(APawn* InPawn)
 {
 	Super::OnPossess(InPawn);
+
+	Zombie_Base = Cast<AZombie_Base>(InPawn);
 	
 	RunBehaviorTree(Zombie_BT);
 	if(UseBlackboard(Zombie_BB,Blackboard))
 	{
 		Blackboard->SetValueAsVector(HomePosKey,InPawn->GetActorLocation());
 	}
+}
+
+void AZombie_AIController::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
 }

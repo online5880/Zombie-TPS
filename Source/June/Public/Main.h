@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 
+#include "GenericTeamAgentInterface.h"
 #include "Grenade.h"
 #include "Weapon_Base.h"
 #include "Camera/CameraComponent.h"
@@ -20,7 +21,7 @@ enum class EState : uint8
 };
 
 UCLASS()
-class JUNE_API AMain : public ACharacter
+class JUNE_API AMain : public ACharacter, public IGenericTeamAgentInterface
 {
 	GENERATED_BODY()
 
@@ -49,6 +50,10 @@ public:
 	float Health;
 	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category = "Stats")
 	float MaxHealth;
+
+	FGenericTeamId TeamId;
+
+	virtual FGenericTeamId GetGenericTeamId() const override;
 
 protected:
 	// Called when the game starts or when spawned

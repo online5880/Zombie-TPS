@@ -27,6 +27,8 @@ class JUNE_API AZombie_AIController : public AAIController
 
 	virtual void OnPossess(APawn* InPawn) override;
 
+	virtual void Tick(float DeltaSeconds) override;
+
 	class AZombie_Base* Zombie_Base;
 
 	public:
@@ -40,5 +42,4 @@ class JUNE_API AZombie_AIController : public AAIController
 	/************************ AI *************************/
 	
 
-	
 };

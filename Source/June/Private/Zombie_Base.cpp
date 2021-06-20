@@ -24,16 +24,15 @@ AZombie_Base::AZombie_Base()
 	bDamaged_Leg = false;
 	bDie = false;
 	bGrenade_Die = false;
+	bTarget = false;
 
 	AudioComponent = CreateDefaultSubobject<UAudioComponent>(TEXT("Audio Component"));
 	AudioComponent->SetActive(false);
 	AudioComponent->SetupAttachment(RootComponent);
-
-	AIControllerClass = AZombie_AIController::StaticClass();
-	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
-
-	//Zombie_AIController = Cast<AZombie_AIController>(GetController());
-
+	
+	/*AIControllerClass = AZombie_AIController::StaticClass();
+	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;*/
+	
 	Tags.Add("Zombie");
 	/************************ 애니메이션 ***********************/
 	static ConstructorHelpers::FObjectFinder<UAnimMontage>
@@ -76,6 +75,7 @@ AZombie_Base::AZombie_Base()
 void AZombie_Base::BeginPlay()
 {
 	Super::BeginPlay();
+	
 	AnimInstance = Cast<UZombie_AnimInstance>(GetMesh()->GetAnimInstance());
 	AudioComponent->SetSound(Idle_Sound);
 	AudioComponent->Play();
@@ -89,7 +89,15 @@ void AZombie_Base::Tick(float DeltaTime)
 	{
 		bDamaged_Leg =true;
 	}
-
+	switch (Zombie_State)
+	{
+		case EZobime_State::Patrol:
+			GetCharacterMovement()->MaxWalkSpeed = 30.f;
+			break;
+		case EZobime_State::Chase:
+			GetCharacterMovement()->MaxWalkSpeed = 300.f;
+			break;
+	}
 }
 
 // Called to bind functionality to input
@@ -102,9 +110,14 @@ float AZombie_Base::TakeDamage(float DamageAmount, FDamageEvent const& DamageEve
 	AActor* DamageCauser)
 {
 	Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+
+	/*class AZombie_AIController* Zombie_AIController;
+	Zombie_AIController = Cast<AZombie_AIController>(GetController());*/
+	
 	if(Health - DamageAmount <= 0.f && !bDie)
 	{
 		Health -= DamageAmount;
+		bTarget = true;
 		bDie = true;
 		if(DamageAmount >= 200.f && !bDamaged_Leg)
 		{
@@ -117,9 +130,7 @@ float AZombie_Base::TakeDamage(float DamageAmount, FDamageEvent const& DamageEve
 	{
 		if(!bDie)
 		{
-			/*class AZombie_AIController* Zombie_AIController;
-			Zombie_AIController = Cast<AZombie_AIController>(GetController());*/
-			
+			bTarget = true;
 			Health -= DamageAmount;
 			AudioComponent->SetSound(React_Sound);
 			AudioComponent->Play();
@@ -129,18 +140,18 @@ float AZombie_Base::TakeDamage(float DamageAmount, FDamageEvent const& DamageEve
 			}
 			GetCharacterMovement()->MaxWalkSpeed = 300.f;
 
-			//Zombie_AIController->GetBlackboardComponent()->SetValueAsObject(AZombie_AIController::TargetKey,DamageCauser);
-			FTimerHandle Reset_Timer;
-			GetWorld()->GetTimerManager().SetTimer(Reset_Timer,[this]()
-			{
-				
-			},10.f,false);
+			/*** 좀비 타겟 설정 ***/
+
+			/*** 좀비 타겟 초기화 ***/
 			
+			/*** 좀비 속도 ***/
+			SetZombie_State(EZobime_State::Chase);
 			FTimerHandle Speed_Timer;
 			GetWorld()->GetTimerManager().SetTimer(Speed_Timer,[this]()
 			{
-				GetCharacterMovement()->MaxWalkSpeed = 30.f;
+				SetZombie_State(EZobime_State::Patrol);
 			},10.f,false);
+			return DamageAmount;
 		}
 	}
 	return DamageAmount;

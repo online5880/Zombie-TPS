@@ -3,6 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
+
+#include "GenericTeamAgentInterface.h"
 #include "GameFramework/Character.h"
 #include "Sound/SoundCue.h"
 
@@ -10,6 +12,8 @@
 UENUM(BlueprintType)
 enum class EZobime_State : uint8
 {
+	Patrol UMETA(DisplayName = "Patrol"),
+	Chase UMETA(DisplayName = "Chase"),
 	Normal UMETA(DisplayName = "Normal"),
 	Ground UMETA(DisplayName = "Ground"),
 	Dead UMETA(DisplayName = "Dead"),
@@ -30,6 +34,10 @@ public:
 	/*UPROPERTY(EditAnywhere,BlueprintReadOnly,Category ="AI")
 	class UAIPerceptionComponent* Zombie_AIPerception;*/
 
+	//class AZombie_AIController* Zombie_AIController;
+
+	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly,Category="AI")
+	bool bTarget;
 	/************************ 정보 *************************/
 	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category = "Status")
 	EZobime_State Zombie_State;
