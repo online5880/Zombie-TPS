@@ -2,6 +2,8 @@
 
 
 #include "Zombie_Base.h"
+
+#include "DrawDebugHelpers.h"
 #include "Zombie_AnimInstance.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Components/AudioComponent.h"
@@ -25,6 +27,7 @@ AZombie_Base::AZombie_Base()
 	bDie = false;
 	bGrenade_Die = false;
 	bTarget = false;
+	//bIsAttacking = false;
 
 	AudioComponent = CreateDefaultSubobject<UAudioComponent>(TEXT("Audio Component"));
 	AudioComponent->SetActive(false);
@@ -45,19 +48,23 @@ AZombie_Base::AZombie_Base()
 
 	static ConstructorHelpers::FObjectFinder<UAnimMontage>
 	Die_1(TEXT("AnimMontage'/Game/Zombies/Zombie_1/Anim/Anim_Zombie_deathspawn_Montage.Anim_Zombie_deathspawn_Montage'"));
-	if(Die_1.Succeeded()) {Die_Montage[1] = Die_1.Object;}
+	if(Die_1.Succeeded()) {Die_Montage[0] = Die_1.Object;}
 
 	static ConstructorHelpers::FObjectFinder<UAnimMontage>
 	Die_2(TEXT("AnimMontage'/Game/Zombies/Zombie_1/Anim/ZombieDeath4UE4_Montage.ZombieDeath4UE4_Montage'"));
-	if(Die_2.Succeeded()) {Die_Montage[2] = Die_2.Object;}
+	if(Die_2.Succeeded()) {Die_Montage[1] = Die_2.Object;}
 
 	static ConstructorHelpers::FObjectFinder<UAnimMontage>
 	Die_3(TEXT("AnimMontage'/Game/Zombies/Zombie_1/Anim/ZombieDying4UE4_Montage.ZombieDying4UE4_Montage'"));
-	if(Die_3.Succeeded()) {Die_Montage[3] = Die_3.Object;}
+	if(Die_3.Succeeded()) {Die_Montage[2] = Die_3.Object;}
 
 	static ConstructorHelpers::FObjectFinder<UAnimMontage>
 	Ground_Die(TEXT("AnimMontage'/Game/Zombies/Zombie_1/Anim/Anim_Zombie_ground-death_Montage.Anim_Zombie_ground-death_Montage'"));
 	if(Ground_Die.Succeeded()) {Ground_Die_Montage = Ground_Die.Object;}
+
+	static ConstructorHelpers::FObjectFinder<UAnimMontage>
+	Attack(TEXT("AnimMontage'/Game/Zombies/Zombie_1/Anim/Zombie_Attack_Montage.Zombie_Attack_Montage'"));
+	if(Attack.Succeeded()) {Attack_Montage = Attack.Object;}
 	/************************ 사운드 ***********************/
 	static ConstructorHelpers::FObjectFinder<USoundCue>
 	S_React(TEXT("SoundCue'/Game/Zombies/Zombie_1/Sound/React.React'"));
@@ -67,6 +74,10 @@ AZombie_Base::AZombie_Base()
 	S_Idle(TEXT("SoundCue'/Game/Zombies/Zombie_1/Sound/Idle.Idle'"));
 	if(S_Idle.Succeeded()) {Idle_Sound = S_Idle.Object;}
 
+	static ConstructorHelpers::FObjectFinder<USoundCue>
+	S_Attack(TEXT("SoundCue'/Game/Zombies/Zombie_1/Sound/Attack.Attack'"));
+	if(S_Attack.Succeeded()) {Attack_Sound = S_Attack.Object;}
+
 	static ConstructorHelpers::FObjectFinder<USoundAttenuation>
 	S_Att(TEXT("SoundAttenuation'/Game/Zombies/Zombie_1/Sound/Zombie_Ambi.Zombie_Ambi'"));
 	if(S_Att.Succeeded()) {Zombie_Attenuation = S_Att.Object;}
@@ -75,8 +86,10 @@ AZombie_Base::AZombie_Base()
 void AZombie_Base::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
+	Zombie_AIController = Cast<AZombie_AIController>(GetController());
 	AnimInstance = Cast<UZombie_AnimInstance>(GetMesh()->GetAnimInstance());
+	
 	AudioComponent->SetSound(Idle_Sound);
 	AudioComponent->Play();
 }
@@ -91,10 +104,10 @@ void AZombie_Base::Tick(float DeltaTime)
 	}
 	switch (Zombie_State)
 	{
-		case EZobime_State::Patrol:
+		case EZombie_State::Patrol:
 			GetCharacterMovement()->MaxWalkSpeed = 30.f;
 			break;
-		case EZobime_State::Chase:
+		case EZombie_State::Chase:
 			GetCharacterMovement()->MaxWalkSpeed = 300.f;
 			break;
 	}
@@ -106,8 +119,53 @@ void AZombie_Base::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 }
 
+void AZombie_Base::Attack()
+{
+	int32 Rand = UKismetMathLibrary::RandomIntegerInRange(0,2);
+	const char* Attack_Section[] = {"Attack_1","Attack_2","Attack_3"};
+	PlayAnimMontage(Attack_Montage,1,FName(Attack_Section[Rand]));
+	bIsAttacking = true;
+
+	FTimerHandle Attack_Timer;
+	GetWorld()->GetTimerManager().SetTimer(Attack_Timer,[this]()
+	{
+		AudioComponent->SetSound(Attack_Sound);
+		AudioComponent->Play();
+		FHitResult OutHit;
+		UWorld* World = GetWorld();
+		FCollisionQueryParams CollisionParams;
+		CollisionParams.AddIgnoredActor(this);
+		FVector Start = GetCapsuleComponent()->GetComponentLocation();
+		FVector End = (Start+(GetCapsuleComponent()->GetForwardVector()*100.f));
+
+	bool Hit = GetWorld()->SweepSingleByChannel(
+		OutHit,
+		Start,
+		End,
+		FQuat::Identity,
+		ECC_EngineTraceChannel5,
+		FCollisionShape::MakeSphere(20.f),
+		CollisionParams);
+	if(Hit)
+	{
+		if(OutHit.GetActor()->ActorHasTag("Player"))
+		{
+			//GEngine->AddOnScreenDebugMessage(-1,1.5f,FColor::Red, FString::Printf(TEXT("Hit Actor : %s"),*OutHit.GetActor()->GetName()),false);
+			FDamageEvent DamageEvent;
+			OutHit.Actor->TakeDamage(100.f,DamageEvent,nullptr,this);
+		}
+	}
+	},0.2f,false);
+}
+
+void AZombie_Base::Attack_End()
+{
+	bIsAttacking = false;
+	//AttackEnd.Execute();
+}
+
 float AZombie_Base::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator,
-	AActor* DamageCauser)
+                               AActor* DamageCauser)
 {
 	Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 
@@ -141,15 +199,15 @@ float AZombie_Base::TakeDamage(float DamageAmount, FDamageEvent const& DamageEve
 			GetCharacterMovement()->MaxWalkSpeed = 300.f;
 
 			/*** 좀비 타겟 설정 ***/
-
+			Zombie_AIController->GetBlackboardComponent()->SetValueAsObject(AZombie_AIController::TargetKey,DamageCauser);
 			/*** 좀비 타겟 초기화 ***/
 			
 			/*** 좀비 속도 ***/
-			SetZombie_State(EZobime_State::Chase);
+			SetZombie_State(EZombie_State::Chase);
 			FTimerHandle Speed_Timer;
 			GetWorld()->GetTimerManager().SetTimer(Speed_Timer,[this]()
 			{
-				SetZombie_State(EZobime_State::Patrol);
+				SetZombie_State(EZombie_State::Patrol);
 			},10.f,false);
 			return DamageAmount;
 		}
@@ -175,7 +233,7 @@ void AZombie_Base::Die()
 		}
 		else
 		{
-			int32 Rand = UKismetMathLibrary::RandomIntegerInRange(1,3);
+			int32 Rand = UKismetMathLibrary::RandomIntegerInRange(0,2);
 			AnimInstance->Montage_Play(Die_Montage[Rand]);
 			Ragdoll(0.9f);
 		}

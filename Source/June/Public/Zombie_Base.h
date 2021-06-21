@@ -9,8 +9,10 @@
 #include "Sound/SoundCue.h"
 
 #include "Zombie_Base.generated.h"
+DECLARE_DELEGATE(FDele_AttackEnd)
+
 UENUM(BlueprintType)
-enum class EZobime_State : uint8
+enum class EZombie_State : uint8
 {
 	Patrol UMETA(DisplayName = "Patrol"),
 	Chase UMETA(DisplayName = "Chase"),
@@ -34,20 +36,29 @@ public:
 	/*UPROPERTY(EditAnywhere,BlueprintReadOnly,Category ="AI")
 	class UAIPerceptionComponent* Zombie_AIPerception;*/
 
-	//class AZombie_AIController* Zombie_AIController;
-
+	class AZombie_AIController* Zombie_AIController;
+	
 	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly,Category="AI")
 	bool bTarget;
+	
+	FDele_AttackEnd AttackEnd;
+	
+	void Attack();
+
+	UFUNCTION(BlueprintCallable)
+	void Attack_End();
+	
+	bool bIsAttacking;
 	/************************ 정보 *************************/
 	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category = "Status")
-	EZobime_State Zombie_State;
+	EZombie_State Zombie_State;
 
-	EZobime_State Get_Zombie_State() const
+	EZombie_State Get_Zombie_State() const
 	{
 		return Zombie_State;
 	}
 
-	void SetZombie_State(EZobime_State State)
+	void SetZombie_State(EZombie_State State)
 	{
 		this->Zombie_State = State;
 	}
@@ -81,7 +92,7 @@ public:
 
 	void Turn_Target(FVector Target);
 	/************************ 사운드 ***********************/
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category="Audio")
 	class UAudioComponent* AudioComponent;
 
 	class USoundAttenuation* Zombie_Attenuation;
@@ -91,6 +102,8 @@ public:
 	class USoundCue* React_Sound;
 
 	class USoundCue* Die_Sound;
+
+	class USoundCue* Attack_Sound;
 	/************************ 애니메이션 ***********************/
 	class UZombie_AnimInstance* AnimInstance;
 
@@ -99,6 +112,8 @@ public:
 	class UAnimMontage* Impact_Die_Montage;
 
 	class UAnimMontage* Ground_Die_Montage;
+
+	class UAnimMontage* Attack_Montage;
 
 	class UAnimMontage* Die_Montage[3];
 

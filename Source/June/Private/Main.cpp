@@ -171,7 +171,10 @@ bool AMain::ServerSprint_Start_Validate(){return true;}
 
 void AMain::ServerSprint_Start_Implementation()
 {
-	GetCharacterMovement()->MaxWalkSpeed = 700.f;
+	if(GetWorld()->GetFirstPlayerController()->IsInputKeyDown(EKeys::W))
+	{
+		GetCharacterMovement()->MaxWalkSpeed = 700.f;
+	}
 }
 
 bool AMain::ServerSprint_End_Validate(){return true;}
@@ -243,7 +246,10 @@ void AMain::Walk_End()
 
 void AMain::Sprint_Start() 
 {
-	GetCharacterMovement()->MaxWalkSpeed = 700.f;
+	if(GetWorld()->GetFirstPlayerController()->IsInputKeyDown(EKeys::W))
+	{
+		GetCharacterMovement()->MaxWalkSpeed = 700.f;
+	}
 	if(!HasAuthority())
 	{
 		ServerSprint_Start();

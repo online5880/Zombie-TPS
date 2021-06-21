@@ -39,6 +39,7 @@ class JUNE_API UZombie_AnimInstance : public UAnimInstance
 
 	class APawn* Pawn;
 
+	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category ="Pawn")
 	class AZombie_Base* Zombie;
 	
 };

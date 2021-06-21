@@ -24,6 +24,6 @@ bool UBTDecorator_Can_Attack::CalculateRawConditionValue(UBehaviorTreeComponent&
 	auto Target = Cast<AMain>(OwnerComp.GetBlackboardComponent()->GetValueAsObject(AZombie_AIController::TargetKey));
 	if(Target == nullptr) return false;
 
-	bResult = (Target->GetDistanceTo(Pawn) <= 200.f);
+	bResult = (Target->GetDistanceTo(Pawn) <= 150.f);
 	return bResult;
 }
