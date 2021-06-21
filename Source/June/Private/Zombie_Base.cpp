@@ -121,47 +121,51 @@ void AZombie_Base::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 
 void AZombie_Base::Attack()
 {
-	int32 Rand = UKismetMathLibrary::RandomIntegerInRange(0,2);
-	const char* Attack_Section[] = {"Attack_1","Attack_2","Attack_3"};
-	PlayAnimMontage(Attack_Montage,1,FName(Attack_Section[Rand]));
-	bIsAttacking = true;
-
-	FTimerHandle Attack_Timer;
-	GetWorld()->GetTimerManager().SetTimer(Attack_Timer,[this]()
+	if(!bIsAttacking && !bDie)
 	{
-		AudioComponent->SetSound(Attack_Sound);
-		AudioComponent->Play();
-		FHitResult OutHit;
-		UWorld* World = GetWorld();
-		FCollisionQueryParams CollisionParams;
-		CollisionParams.AddIgnoredActor(this);
-		FVector Start = GetCapsuleComponent()->GetComponentLocation();
-		FVector End = (Start+(GetCapsuleComponent()->GetForwardVector()*100.f));
+		int32 Rand = UKismetMathLibrary::RandomIntegerInRange(0,2);
+		const char* Attack_Section[] = {"Attack_1","Attack_2","Attack_3"};
+		PlayAnimMontage(Attack_Montage,1,FName(Attack_Section[Rand]));
+		bIsAttacking = true;
 
-	bool Hit = GetWorld()->SweepSingleByChannel(
-		OutHit,
-		Start,
-		End,
-		FQuat::Identity,
-		ECC_EngineTraceChannel5,
-		FCollisionShape::MakeSphere(20.f),
-		CollisionParams);
-	if(Hit)
-	{
-		if(OutHit.GetActor()->ActorHasTag("Player"))
+		FTimerHandle Attack_Timer;
+		GetWorld()->GetTimerManager().SetTimer(Attack_Timer,[this]()
 		{
-			//GEngine->AddOnScreenDebugMessage(-1,1.5f,FColor::Red, FString::Printf(TEXT("Hit Actor : %s"),*OutHit.GetActor()->GetName()),false);
-			FDamageEvent DamageEvent;
-			OutHit.Actor->TakeDamage(100.f,DamageEvent,nullptr,this);
+			AudioComponent->SetSound(Attack_Sound);
+			AudioComponent->Play();
+			FHitResult OutHit;
+			UWorld* World = GetWorld();
+			FCollisionQueryParams CollisionParams;
+			CollisionParams.AddIgnoredActor(this);
+			FVector Start = GetCapsuleComponent()->GetComponentLocation();
+			FVector End = (Start+(GetCapsuleComponent()->GetForwardVector()*100.f));
+
+		bool Hit = GetWorld()->SweepSingleByChannel(
+			OutHit,
+			Start,
+			End,
+			FQuat::Identity,
+			ECC_EngineTraceChannel5,
+			FCollisionShape::MakeSphere(20.f),
+			CollisionParams);
+		if(Hit)
+		{
+			if(OutHit.GetActor()->ActorHasTag("Player"))
+			{
+				//GEngine->AddOnScreenDebugMessage(-1,1.5f,FColor::Red, FString::Printf(TEXT("Hit Actor : %s"),*OutHit.GetActor()->GetName()),false);
+				FDamageEvent DamageEvent;
+				OutHit.Actor->TakeDamage(100.f,DamageEvent,nullptr,this);
+			}
 		}
+		},0.2f,false);
 	}
-	},0.2f,false);
 }
 
 void AZombie_Base::Attack_End()
 {
 	bIsAttacking = false;
 	//AttackEnd.Execute();
+	GEngine->AddOnScreenDebugMessage(-1,1.5f,FColor::Red, FString::Printf(TEXT("공격 끝"),false));
 }
 
 float AZombie_Base::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator,
@@ -177,6 +181,7 @@ float AZombie_Base::TakeDamage(float DamageAmount, FDamageEvent const& DamageEve
 		Health -= DamageAmount;
 		bTarget = true;
 		bDie = true;
+		bIsAttacking = false;
 		if(DamageAmount >= 200.f && !bDamaged_Leg)
 		{
 			bGrenade_Die = true;
@@ -207,7 +212,10 @@ float AZombie_Base::TakeDamage(float DamageAmount, FDamageEvent const& DamageEve
 			FTimerHandle Speed_Timer;
 			GetWorld()->GetTimerManager().SetTimer(Speed_Timer,[this]()
 			{
-				SetZombie_State(EZombie_State::Patrol);
+				if(!bTarget)
+				{
+					SetZombie_State(EZombie_State::Patrol);
+				}
 			},10.f,false);
 			return DamageAmount;
 		}

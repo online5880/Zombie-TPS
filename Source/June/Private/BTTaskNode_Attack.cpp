@@ -20,12 +20,11 @@ EBTNodeResult::Type UBTTaskNode_Attack::ExecuteTask(UBehaviorTreeComponent& Owne
 	Zombie_Base = Cast<AZombie_Base>(OwnerComp.GetAIOwner()->GetPawn());
 	if(!Zombie_Base) return EBTNodeResult::Failed;
 
-	Zombie_Base->Attack();
-	bIsAttacking = true;
-	/*Zombie->AttackEnd.BindLambda([this]()-> void
+	if(!bIsAttacking)
 	{
-		bIsAttacking = false;
-	});*/
+		Zombie_Base->Attack();
+		bIsAttacking = true;
+	}
 
 	return EBTNodeResult::InProgress;
 }
