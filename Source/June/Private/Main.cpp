@@ -96,7 +96,6 @@ AMain::AMain()
 	React(TEXT("AnimMontage'/Game/Main/Anim/Rifle/IP/Rifle_React_Montage.Rifle_React_Montage'"));
 	if(React.Succeeded()) { React_Montage = React.Object;}
 }
-
 FGenericTeamId AMain::GetGenericTeamId() const
 {
 	return TeamId;
@@ -329,32 +328,50 @@ float AMain::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, ACo
 {
 	Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 
-	GEngine->AddOnScreenDebugMessage(-1,1.5f,FColor::Red, FString::Printf(TEXT("공격받음"),false));
+	//GEngine->AddOnScreenDebugMessage(-1,1.5f,FColor::Red, FString::Printf(TEXT("공격받음"),false));
 
-	int React_Rand = FMath::RandRange(0,3);
+	if(Health - DamageAmount <= 0.f && !bDie)
+	{
+		Health -= DamageAmount;
+		bDie = true;
+		Die();
+	}
+	else
+	{
+		int React_Rand = FMath::RandRange(0,3);
 
-	if(React_Rand == 0)
-	{
-		AnimInstance->Montage_Play(React_Montage);
-		AnimInstance->Montage_JumpToSection(FName("React_1"),React_Montage);
-	}
-	if(React_Rand == 1)
-	{
-		AnimInstance->Montage_Play(React_Montage);
-		AnimInstance->Montage_JumpToSection(FName("React_2"),React_Montage);
-	}
-	if(React_Rand == 2)
-	{
-		AnimInstance->Montage_Play(React_Montage);
-		AnimInstance->Montage_JumpToSection(FName("React_3"),React_Montage);
-	}
-	if(React_Rand == 3)
-	{
-		AnimInstance->Montage_Play(React_Montage);
-		AnimInstance->Montage_JumpToSection(FName("React_4"),React_Montage);
-	}
+		if(React_Rand == 0)
+		{
+			AnimInstance->Montage_Play(React_Montage);
+			AnimInstance->Montage_JumpToSection(FName("React_1"),React_Montage);
+		}
+		if(React_Rand == 1)
+		{
+			AnimInstance->Montage_Play(React_Montage);
+			AnimInstance->Montage_JumpToSection(FName("React_2"),React_Montage);
+		}
+		if(React_Rand == 2)
+		{
+			AnimInstance->Montage_Play(React_Montage);
+			AnimInstance->Montage_JumpToSection(FName("React_3"),React_Montage);
+		}
+		if(React_Rand == 3)
+		{
+			AnimInstance->Montage_Play(React_Montage);
+			AnimInstance->Montage_JumpToSection(FName("React_4"),React_Montage);
+		}
+		SetState(EState::React);
 
-	return DamageAmount;
+		return DamageAmount;
+	}
+}
+void AMain::Die()
+{
+	if(bDie)
+	{
+		SetState(EState::Die);
+		AnimInstance->Montage_Play(Die_Montage);
+	}
 }
 /******************************************************** 라이플 ********************************************************/
 void AMain::Fire()

@@ -73,6 +73,8 @@ public:
 	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category = "Stats")
 	float MaxHealth;
 
+	void Die();
+
 	bool bDie;
 
 	FGenericTeamId TeamId;
@@ -207,7 +209,9 @@ public:
 
 	UAnimMontage* Throw_Close; /// 수류탄 가까이
 
-	UAnimMontage* React_Montage;
+	UAnimMontage* React_Montage; /// 피격 모션
+
+	UAnimMontage* Die_Montage; /// 죽는 모션
 	/************************ 라이플 ************************/
 	void Equip_Rifle(); // 라이플 장착
 
