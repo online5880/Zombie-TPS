@@ -13,11 +13,23 @@
 #include "Main.generated.h"
 
 UENUM(BlueprintType)
-enum class EState : uint8
+enum class EWeaponState : uint8
 {
 	Normal UMETA(DisplayName = "Normal"),
 	Rifle UMETA(DisplayName = "Rifle"),
 	Pistol UMETA(DisplayName = "Pisol"),
+};
+
+UENUM(BlueprintType)
+enum class EState : uint8
+{
+	Normal UMETA(DisplayName = "Normal"),
+	Sprint UMETA(DisplayName = "Sprint"),
+	Walk UMETA(DisplayName = "Walk"),
+	Aiming UMETA(DisplayName = "Aiming"),
+	Fire UMETA(DisplayName = "Fire"),
+	React UMETA(DisplayName = "React"),
+	Die UMETA(DisplayName = "Die"),
 };
 
 UCLASS()
@@ -35,25 +47,39 @@ public:
 
 	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category = "Camera")
 	class UCameraComponent* CameraComponent;
-	/************************ 몸 ***********************/
+	/**************************** 몸 ***********************/
 	UPROPERTY(EditAnywhere,BlueprintReadOnly, Category = "Body")
 	class USkeletalMeshComponent* Body_Mesh;
+	/**************************** 사운드 ***********************/
+	class UAudioComponent* AudioComponent;
+
+	class USoundCue* React_Cue;
 	/************************ 스탯 / 상태***********************/
 	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category = "State")
-	EState Weapon_State;
+	EWeaponState Weapon_State;
 
-	EState Get_Weapon_State() const 	{ return Weapon_State; }
+	EWeaponState Get_Weapon_State() const 	{ return Weapon_State; }
 
-	void Set_Weapon_State(EState Set_State)	{ this->Weapon_State = Set_State; }
+	void Set_Weapon_State(EWeaponState Set_State)	{ this->Weapon_State = Set_State; }
+
+	EState State;
+
+	EState Get_State() const { return State; }
+
+	void SetState(EState Set_State) { this->State = Set_State;	}
 
 	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category = "Stats")
 	float Health;
 	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category = "Stats")
 	float MaxHealth;
 
+	bool bDie;
+
 	FGenericTeamId TeamId;
 
 	virtual FGenericTeamId GetGenericTeamId() const override;
+
+	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 
 protected:
 	// Called when the game starts or when spawned
@@ -162,6 +188,26 @@ public:
 
 	UPROPERTY(BlueprintReadOnly)
 	class AWeapon_Base* Weapon_Base;
+	/************************ 애니메이션 ************************/
+	class UMain_AnimInstance* AnimInstance;
+	
+	UAnimMontage* Equip_Rifle_Montage; ///라이플 장착
+ 
+	UAnimMontage* UnEquip_Rifle_Montage; /// 라이플 넣기
+
+	UAnimMontage* Rifle_Aiming_Montage; /// 라이플 조준
+
+	UAnimMontage* Rifle_Firing_Montage; /// 라이플 사격
+
+	UAnimMontage* Rifle_Relaoding_Montage; /// 라이플 장전
+
+	UAnimMontage* Throw_Loop; /// 수류탄 준비
+
+	UAnimMontage* Throw_Far; /// 수류탄 멀리
+
+	UAnimMontage* Throw_Close; /// 수류탄 가까이
+
+	UAnimMontage* React_Montage;
 	/************************ 라이플 ************************/
 	void Equip_Rifle(); // 라이플 장착
 
@@ -184,22 +230,4 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void Spawn_Grenade();
-	/************************ 애니메이션 ************************/
-	class UMain_AnimInstance* AnimInstance;
-	
-	UAnimMontage* Equip_Rifle_Montage; ///라이플 장착
- 
-	UAnimMontage* UnEquip_Rifle_Montage; /// 라이플 넣기
-
-	UAnimMontage* Rifle_Aiming_Montage; /// 라이플 조준
-
-	UAnimMontage* Rifle_Firing_Montage; /// 라이플 사격
-
-	UAnimMontage* Rifle_Relaoding_Montage; /// 라이플 장전
-
-	UAnimMontage* Throw_Loop; /// 수류탄 준비
-
-	UAnimMontage* Throw_Far; /// 수류탄 멀리
-
-	UAnimMontage* Throw_Close; /// 수류탄 가까이
 };

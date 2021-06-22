@@ -11,6 +11,8 @@
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "Components/AudioComponent.h"
+#include "Sound/SoundCue.h"
 
 // Sets default values
 AMain::AMain()
@@ -30,6 +32,9 @@ AMain::AMain()
 
 	CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	CameraComponent->SetupAttachment(SpringArmComponent,USpringArmComponent::SocketName);
+
+	AudioComponent = CreateDefaultSubobject<UAudioComponent>(TEXT("Audio Component"));
+	AudioComponent->SetupAttachment(RootComponent);
 
 	Inventory_Capacity = 10;
 
@@ -87,6 +92,9 @@ AMain::AMain()
 	{
 		Throw_Close = Grenade_Close.Object;
 	}
+	static ConstructorHelpers::FObjectFinder<UAnimMontage>
+	React(TEXT("AnimMontage'/Game/Main/Anim/Rifle/IP/Rifle_React_Montage.Rifle_React_Montage'"));
+	if(React.Succeeded()) { React_Montage = React.Object;}
 }
 
 FGenericTeamId AMain::GetGenericTeamId() const
@@ -101,7 +109,7 @@ void AMain::BeginPlay()
 
 	AnimInstance = Cast<UMain_AnimInstance>(GetMesh()->GetAnimInstance());
 
-	Set_Weapon_State(EState::Normal);
+	Set_Weapon_State(EWeaponState::Normal);
 }
 
 // Called every frame
@@ -114,10 +122,10 @@ void AMain::Tick(float DeltaTime)
 	}
 	switch (Weapon_State)
 	{
-		case EState::Normal:
+		case EWeaponState::Normal:
 			bEquip_Rifle = false;
 			break;
-		case EState::Rifle:
+		case EWeaponState::Rifle:
 			bEquip_Rifle = true;
 	}
 	LineTrace();
@@ -315,6 +323,39 @@ void AMain::Interact()
 		}
 	}
 }
+
+float AMain::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator,
+	AActor* DamageCauser)
+{
+	Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+
+	GEngine->AddOnScreenDebugMessage(-1,1.5f,FColor::Red, FString::Printf(TEXT("공격받음"),false));
+
+	int React_Rand = FMath::RandRange(0,3);
+
+	if(React_Rand == 0)
+	{
+		AnimInstance->Montage_Play(React_Montage);
+		AnimInstance->Montage_JumpToSection(FName("React_1"),React_Montage);
+	}
+	if(React_Rand == 1)
+	{
+		AnimInstance->Montage_Play(React_Montage);
+		AnimInstance->Montage_JumpToSection(FName("React_2"),React_Montage);
+	}
+	if(React_Rand == 2)
+	{
+		AnimInstance->Montage_Play(React_Montage);
+		AnimInstance->Montage_JumpToSection(FName("React_3"),React_Montage);
+	}
+	if(React_Rand == 3)
+	{
+		AnimInstance->Montage_Play(React_Montage);
+		AnimInstance->Montage_JumpToSection(FName("React_4"),React_Montage);
+	}
+
+	return DamageAmount;
+}
 /******************************************************** 라이플 ********************************************************/
 void AMain::Fire()
 {
@@ -327,11 +368,12 @@ void AMain::Fire()
 
 void AMain::Fire_Start()
 {
-	if(Get_Weapon_State() == EState::Rifle && bAiming)
+	if(Get_Weapon_State() == EWeaponState::Rifle && bAiming)
 	{
 		bFire = true;
 		AnimInstance->Montage_Play(Rifle_Firing_Montage);
 		Fire();
+		SetState(EState::Fire);
 	}
 }
 
@@ -349,7 +391,7 @@ void AMain::Aiming()
 {
 	switch (Weapon_State)
 	{
-	case EState::Rifle:
+	case EWeaponState::Rifle:
 		if(!AnimInstance->IsAnyMontagePlaying() && Weapon_Base && !bAiming && !bReloading && !bIsGrenade)
 		{
 			AnimInstance->Montage_Play(Rifle_Aiming_Montage);
@@ -369,7 +411,7 @@ void AMain::Reload()
 {
 	switch (Weapon_State)
 	{
-	case EState::Rifle:
+	case EWeaponState::Rifle:
 		if(Weapon_Base->Ammo != Weapon_Base->MaxAmmo && Weapon_Base->HaveAmmo != 0)
 		{
 			if(!bFire && !bAiming && !bReloading)
@@ -404,17 +446,17 @@ void AMain::UnEquip()
 		}
 	}
 	
-	if(!AnimInstance->IsAnyMontagePlaying() && Weapon_Base && !(Get_Weapon_State() == EState::Normal))
+	if(!AnimInstance->IsAnyMontagePlaying() && Weapon_Base && !(Get_Weapon_State() == EWeaponState::Normal))
 	{
 		switch (Weapon_State)
 		{
-		case EState::Rifle:
+		case EWeaponState::Rifle:
 			AnimInstance->Montage_Play(UnEquip_Rifle_Montage);
 			GetWorld()->GetTimerManager().SetTimer(Rifle_Timer,[this]()
 			{
 				Weapon_Base->AttachToComponent(GetMesh(),FAttachmentTransformRules::SnapToTargetIncludingScale,FName("Rifle_Socket"));
 			},1.1f,false);
-			Set_Weapon_State(EState::Normal);
+			Set_Weapon_State(EWeaponState::Normal);
 			break;
 		}
 	}
@@ -437,13 +479,13 @@ void AMain::Equip_Rifle()
 	
 	if(AnimInstance)
 	{
-		if(!AnimInstance->IsAnyMontagePlaying() && Weapon_Base && !(Get_Weapon_State() == EState::Rifle))
+		if(!AnimInstance->IsAnyMontagePlaying() && Weapon_Base && !(Get_Weapon_State() == EWeaponState::Rifle))
 		{
 			AnimInstance->Montage_Play(Equip_Rifle_Montage);			
 			GetWorld()->GetTimerManager().SetTimer(Rifle_Timer,[this]()
 			{
 				Weapon_Base->AttachToComponent(GetMesh(),FAttachmentTransformRules::SnapToTargetIncludingScale,FName("Weapon_Socket"));
-				Set_Weapon_State(EState::Rifle);
+				Set_Weapon_State(EWeaponState::Rifle);
 			},0.5f,false);
 		}
 	}
@@ -453,7 +495,7 @@ void AMain::Throw_Ready()
 {
 	if(AnimInstance && !bIsGrenade)
 	{
-		if(!AnimInstance->IsAnyMontagePlaying() && Get_Weapon_State() == EState::Rifle)
+		if(!AnimInstance->IsAnyMontagePlaying() && Get_Weapon_State() == EWeaponState::Rifle)
 		{
 			AnimInstance->Montage_Play(Throw_Loop);
 			bIsGrenade = true;

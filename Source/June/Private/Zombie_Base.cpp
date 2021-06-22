@@ -173,9 +173,6 @@ float AZombie_Base::TakeDamage(float DamageAmount, FDamageEvent const& DamageEve
 {
 	Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 
-	/*class AZombie_AIController* Zombie_AIController;
-	Zombie_AIController = Cast<AZombie_AIController>(GetController());*/
-	
 	if(Health - DamageAmount <= 0.f && !bDie)
 	{
 		Health -= DamageAmount;
