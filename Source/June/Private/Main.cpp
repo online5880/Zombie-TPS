@@ -335,35 +335,42 @@ float AMain::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, ACo
 		Health -= DamageAmount;
 		bDie = true;
 		Die();
+		return DamageAmount;
 	}
 	else
 	{
-		int React_Rand = FMath::RandRange(0,3);
+		if(!bDie)
+		{
+			int React_Rand = FMath::RandRange(0,3);
 
-		if(React_Rand == 0)
-		{
-			AnimInstance->Montage_Play(React_Montage);
-			AnimInstance->Montage_JumpToSection(FName("React_1"),React_Montage);
-		}
-		if(React_Rand == 1)
-		{
-			AnimInstance->Montage_Play(React_Montage);
-			AnimInstance->Montage_JumpToSection(FName("React_2"),React_Montage);
-		}
-		if(React_Rand == 2)
-		{
-			AnimInstance->Montage_Play(React_Montage);
-			AnimInstance->Montage_JumpToSection(FName("React_3"),React_Montage);
-		}
-		if(React_Rand == 3)
-		{
-			AnimInstance->Montage_Play(React_Montage);
-			AnimInstance->Montage_JumpToSection(FName("React_4"),React_Montage);
-		}
-		SetState(EState::React);
+			Health -= DamageAmount;
 
-		return DamageAmount;
+			if(React_Rand == 0)
+			{
+				AnimInstance->Montage_Play(React_Montage);
+				AnimInstance->Montage_JumpToSection(FName("React_1"),React_Montage);
+			}
+			if(React_Rand == 1)
+			{
+				AnimInstance->Montage_Play(React_Montage);
+				AnimInstance->Montage_JumpToSection(FName("React_2"),React_Montage);
+			}
+			if(React_Rand == 2)
+			{
+				AnimInstance->Montage_Play(React_Montage);
+				AnimInstance->Montage_JumpToSection(FName("React_3"),React_Montage);
+			}
+			if(React_Rand == 3)
+			{
+				AnimInstance->Montage_Play(React_Montage);
+				AnimInstance->Montage_JumpToSection(FName("React_4"),React_Montage);
+			}
+			SetState(EState::React);
+
+			return DamageAmount;
+		}
 	}
+	return DamageAmount;
 }
 void AMain::Die()
 {

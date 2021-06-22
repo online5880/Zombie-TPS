@@ -154,7 +154,7 @@ void AZombie_Base::Attack()
 			{
 				//GEngine->AddOnScreenDebugMessage(-1,1.5f,FColor::Red, FString::Printf(TEXT("Hit Actor : %s"),*OutHit.GetActor()->GetName()),false);
 				FDamageEvent DamageEvent;
-				OutHit.Actor->TakeDamage(100.f,DamageEvent,nullptr,this);
+				OutHit.Actor->TakeDamage(10.f,DamageEvent,nullptr,this);
 			}
 		}
 		},0.2f,false);
