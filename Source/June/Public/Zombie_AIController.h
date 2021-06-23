@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "AIController.h"
+#include "Main.h"
 #include "Zombie_Base.h"
 #include "Perception/AISense_Sight.h"
 
@@ -30,6 +31,10 @@ class JUNE_API AZombie_AIController : public AAIController
 	virtual void Tick(float DeltaSeconds) override;
 
 	class AZombie_Base* Zombie_Base;
+
+	class AMain* Main;
+
+	virtual void BeginPlay() override;
 
 	public:
 	static const FName HomePosKey;

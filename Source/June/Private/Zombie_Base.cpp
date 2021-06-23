@@ -33,9 +33,6 @@ AZombie_Base::AZombie_Base()
 	AudioComponent->SetActive(false);
 	AudioComponent->SetupAttachment(RootComponent);
 	
-	/*AIControllerClass = AZombie_AIController::StaticClass();
-	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;*/
-	
 	Tags.Add("Zombie");
 	/************************ 애니메이션 ***********************/
 	static ConstructorHelpers::FObjectFinder<UAnimMontage>

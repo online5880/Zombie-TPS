@@ -46,55 +46,44 @@ AMain::AMain()
 	/************************ 애니메이션 ************************/
 	static ConstructorHelpers::FObjectFinder<UAnimMontage>
 	Equip_Rifle(TEXT("AnimMontage'/Game/Main/Anim/Rifle/IP/EquipRifle_Montage.EquipRifle_Montage'"));
-	if(Equip_Rifle.Succeeded())
-	{
-		Equip_Rifle_Montage = Equip_Rifle.Object;
-	}
+	if(Equip_Rifle.Succeeded())	{	Equip_Rifle_Montage = Equip_Rifle.Object;	}
+	
 	static ConstructorHelpers::FObjectFinder<UAnimMontage>
 	UnEquip_Rifle(TEXT("AnimMontage'/Game/Main/Anim/Rifle/IP/HolsterRifle_Montage.HolsterRifle_Montage'"));
-	if(UnEquip_Rifle.Succeeded())
-	{
-		UnEquip_Rifle_Montage = UnEquip_Rifle.Object;
-	}
+	if(UnEquip_Rifle.Succeeded())	{	UnEquip_Rifle_Montage = UnEquip_Rifle.Object;	}
+	
 	static ConstructorHelpers::FObjectFinder<UAnimMontage>
 	Rifle_Aiming(TEXT("AnimMontage'/Game/Main/Anim/Rifle/IP/Rifle_Aiming_Montage.Rifle_Aiming_Montage'"));
-	if(Rifle_Aiming.Succeeded())
-	{
-		Rifle_Aiming_Montage = Rifle_Aiming.Object;
-	}
+	if(Rifle_Aiming.Succeeded())	{	Rifle_Aiming_Montage = Rifle_Aiming.Object;	}
+	
 	static ConstructorHelpers::FObjectFinder<UAnimMontage>
 	Rifle_Fire(TEXT("AnimMontage'/Game/Main/Anim/Rifle/IP/Rifle_ShootLoop_Montage.Rifle_ShootLoop_Montage'"));
-	if(Rifle_Fire.Succeeded())
-	{
-		Rifle_Firing_Montage = Rifle_Fire.Object;
-	}
+	if(Rifle_Fire.Succeeded())	{	Rifle_Firing_Montage = Rifle_Fire.Object;	}
+	
 	static ConstructorHelpers::FObjectFinder<UAnimMontage>
 	Rifle_Reload(TEXT("AnimMontage'/Game/Main/Anim/Rifle/IP/Rifle_Reload_Montage.Rifle_Reload_Montage'"));
-	if(Rifle_Reload.Succeeded())
-	{
-		Rifle_Relaoding_Montage = Rifle_Reload.Object;
-	}
+	if(Rifle_Reload.Succeeded())	{	Rifle_Relaoding_Montage = Rifle_Reload.Object;	}
+	
 	static ConstructorHelpers::FObjectFinder<UAnimMontage>
 	Grenade_Ready(TEXT("AnimMontage'/Game/Main/Anim/Rifle/IP/Rifle_Grenade_Throw_Loop_Montage.Rifle_Grenade_Throw_Loop_Montage'"));
-	if(Grenade_Ready.Succeeded())
-	{
-		Throw_Loop = Grenade_Ready.Object;
-	}
+	if(Grenade_Ready.Succeeded())	{	Throw_Loop = Grenade_Ready.Object;	}
+	
 	static ConstructorHelpers::FObjectFinder<UAnimMontage>
 	Grenade_Far(TEXT("AnimMontage'/Game/Main/Anim/Rifle/IP/Rifle_Grenade_Throw_Far_Montage.Rifle_Grenade_Throw_Far_Montage'"));
-	if(Grenade_Far.Succeeded())
-	{
-		Throw_Far = Grenade_Far.Object;
-	}
+	if(Grenade_Far.Succeeded())	{	Throw_Far = Grenade_Far.Object;	}
+	
 	static ConstructorHelpers::FObjectFinder<UAnimMontage>
 	Grenade_Close(TEXT("AnimMontage'/Game/Main/Anim/Rifle/IP/Rifle_Grenade_Throw_Close_Montage.Rifle_Grenade_Throw_Close_Montage'"));
-	if(Grenade_Close.Succeeded())
-	{
-		Throw_Close = Grenade_Close.Object;
-	}
+	if(Grenade_Close.Succeeded())	{	Throw_Close = Grenade_Close.Object;	}
+	
 	static ConstructorHelpers::FObjectFinder<UAnimMontage>
 	React(TEXT("AnimMontage'/Game/Main/Anim/Rifle/IP/Rifle_React_Montage.Rifle_React_Montage'"));
 	if(React.Succeeded()) { React_Montage = React.Object;}
+
+	static ConstructorHelpers::FObjectFinder<UAnimMontage>
+	Die(TEXT("AnimMontage'/Game/Main/Anim/Rifle/IP/Rifle_Death_Montage.Rifle_Death_Montage'"));
+	if(Die.Succeeded()) { Die_Montage = Die.Object;}
+	
 }
 FGenericTeamId AMain::GetGenericTeamId() const
 {
@@ -376,10 +365,36 @@ void AMain::Die()
 {
 	if(bDie)
 	{
+		AnimInstance->StopAllMontages(0.1f);
 		SetState(EState::Die);
-		AnimInstance->Montage_Play(Die_Montage);
+		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
+		GetCharacterMovement()->DisableMovement();
+		int Die_Rand = FMath::RandRange(0,3);
+
+		if(Die_Rand == 0)
+		{
+			AnimInstance->Montage_Play(Die_Montage);
+			AnimInstance->Montage_JumpToSection(FName("Death_1"),Die_Montage);
+		}
+		if(Die_Rand == 1)
+		{
+			AnimInstance->Montage_Play(Die_Montage);
+			AnimInstance->Montage_JumpToSection(FName("Death_2"),Die_Montage);
+		}
+		if(Die_Rand == 2)
+		{
+			AnimInstance->Montage_Play(Die_Montage);
+			AnimInstance->Montage_JumpToSection(FName("Death_3"),Die_Montage);
+		}
+		if(Die_Rand == 3)
+		{
+			AnimInstance->Montage_Play(Die_Montage);
+			AnimInstance->Montage_JumpToSection(FName("Death_4"),Die_Montage);
+		}
+		GetMesh()->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
 	}
 }
+
 /******************************************************** 라이플 ********************************************************/
 void AMain::Fire()
 {
@@ -392,7 +407,7 @@ void AMain::Fire()
 
 void AMain::Fire_Start()
 {
-	if(Get_Weapon_State() == EWeaponState::Rifle && bAiming)
+	if(Get_Weapon_State() == EWeaponState::Rifle && bAiming && !bDie)
 	{
 		bFire = true;
 		AnimInstance->Montage_Play(Rifle_Firing_Montage);
@@ -413,14 +428,17 @@ void AMain::Fire_End()
 
 void AMain::Aiming()
 {
-	switch (Weapon_State)
+	if(!bDie)
 	{
-	case EWeaponState::Rifle:
-		if(!AnimInstance->IsAnyMontagePlaying() && Weapon_Base && !bAiming && !bReloading && !bIsGrenade)
+		switch (Weapon_State)
 		{
-			AnimInstance->Montage_Play(Rifle_Aiming_Montage);
-			bAiming = true;
-			break;
+		case EWeaponState::Rifle:
+			if(!AnimInstance->IsAnyMontagePlaying() && Weapon_Base && !bAiming && !bReloading && !bIsGrenade)
+			{
+				AnimInstance->Montage_Play(Rifle_Aiming_Montage);
+				bAiming = true;
+				break;
+			}
 		}
 	}
 }
@@ -433,16 +451,19 @@ void AMain::Aiming_End()
 
 void AMain::Reload()
 {
-	switch (Weapon_State)
+	if(!bDie)
 	{
-	case EWeaponState::Rifle:
-		if(Weapon_Base->Ammo != Weapon_Base->MaxAmmo && Weapon_Base->HaveAmmo != 0)
+		switch (Weapon_State)
 		{
-			if(!bFire && !bAiming && !bReloading)
+		case EWeaponState::Rifle:
+			if(Weapon_Base->Ammo != Weapon_Base->MaxAmmo && Weapon_Base->HaveAmmo != 0)
 			{
-				AnimInstance->Montage_Play(Rifle_Relaoding_Montage);
-				Weapon_Base->Reload();
-				bReloading = true;
+				if(!bFire && !bAiming && !bReloading)
+				{
+					AnimInstance->Montage_Play(Rifle_Relaoding_Montage);
+					Weapon_Base->Reload();
+					bReloading = true;
+				}
 			}
 		}
 	}

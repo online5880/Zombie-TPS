@@ -4,8 +4,8 @@
 #include "Zombie_AIController.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "BehaviorTree/BehaviorTree.h"
+#include "Kismet/GameplayStatics.h"
 #include "Perception/AIPerceptionComponent.h"
-#include "Perception/AISenseConfig_Sight.h"
 
 const FName AZombie_AIController::HomePosKey(TEXT("HomePos"));
 const FName AZombie_AIController::PatrolPosKey(TEXT("PatrolPos"));
@@ -43,4 +43,11 @@ void AZombie_AIController::OnPossess(APawn* InPawn)
 void AZombie_AIController::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
+}
+
+void AZombie_AIController::BeginPlay()
+{
+	Super::BeginPlay();
+
+	Main = Cast<AMain>(UGameplayStatics::GetPlayerPawn(GetWorld(),0));
 }
