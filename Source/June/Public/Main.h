@@ -46,6 +46,9 @@ public:
 
 	class AZombie_Base* Zombie_Base;
 
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<AZombie_Base> Zombies;
+
 	/************************ 카메라 ***********************/
 	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category = "Camera")
 	class USpringArmComponent* SpringArmComponent;

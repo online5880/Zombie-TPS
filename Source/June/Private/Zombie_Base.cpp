@@ -166,7 +166,7 @@ void AZombie_Base::Attack_End()
 {
 	bIsAttacking = false;
 	//AttackEnd.Execute();
-	GEngine->AddOnScreenDebugMessage(-1,1.5f,FColor::Red, FString::Printf(TEXT("공격 끝"),false));
+	//GEngine->AddOnScreenDebugMessage(-1,1.5f,FColor::Red, FString::Printf(TEXT("공격 끝"),false));
 }
 
 float AZombie_Base::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator,

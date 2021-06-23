@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
-
+DECLARE_DELEGATE(FDelegate_Reset);
 #include "CoreMinimal.h"
 #include "AIController.h"
 #include "Main.h"
@@ -9,7 +9,6 @@
 #include "Perception/AISense_Sight.h"
 
 #include "Zombie_AIController.generated.h"
-
 /**
  * 
  */
@@ -23,7 +22,10 @@ class JUNE_API AZombie_AIController : public AAIController
 	UPROPERTY(BlueprintReadOnly)
 	class AZombie_Base* Zombie_Base;
 
+	UFUNCTION()
 	void Reset_Target();
+
+	FDelegate_Reset Delegate_Reset;
 
 	private:
 
@@ -47,6 +49,8 @@ class JUNE_API AZombie_AIController : public AAIController
 	static const FName TargetKey;
 
 	static const FName TargetLocationKey;
+
+	static const FName NoiseKey;
 	/************************ AI *************************/
 	
 

@@ -11,6 +11,7 @@ const FName AZombie_AIController::HomePosKey(TEXT("HomePos"));
 const FName AZombie_AIController::PatrolPosKey(TEXT("PatrolPos"));
 const FName AZombie_AIController::TargetKey(TEXT("Target"));
 const FName AZombie_AIController::TargetLocationKey(TEXT("TargetLocation"));
+const FName AZombie_AIController::NoiseKey(TEXT("bNoise"));
 
 AZombie_AIController::AZombie_AIController()
 {

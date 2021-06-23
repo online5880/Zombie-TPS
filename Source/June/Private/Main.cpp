@@ -103,6 +103,8 @@ void AMain::BeginPlay()
 	AnimInstance = Cast<UMain_AnimInstance>(GetMesh()->GetAnimInstance());
 
 	Set_Weapon_State(EWeaponState::Normal);
+
+	Zombie_Base = Cast<AZombie_Base>(UGameplayStatics::GetActorOfClass(GetWorld(),Zombies));
 }
 
 // Called every frame
@@ -324,15 +326,16 @@ float AMain::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, ACo
 
 	//GEngine->AddOnScreenDebugMessage(-1,1.5f,FColor::Red, FString::Printf(TEXT("공격받음"),false));
 
-	Zombie_Base = Cast<AZombie_Base>(DamageCauser);
-
 	if(Health - DamageAmount <= 0.f && !bDie)
 	{
 		Health -= DamageAmount;
 		bDie = true;
 		Tags.Remove("Player");
-		Zombie_Base->Zombie_AIController->Reset_Target(); /// Blackboard TargetKey -> nullptr
 		Die();
+		if(Zombie_Base)
+		{
+			Zombie_Base->Zombie_AIController->Reset_Target(); /// Blackboard TargetKey -> nullptr
+		}
 		return DamageAmount;
 	}
 	else
@@ -376,8 +379,8 @@ void AMain::Die()
 	{
 		AnimInstance->StopAllMontages(0.1f);
 		SetState(EState::Die);
-		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
-		GetCharacterMovement()->DisableMovement();
+		//GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
+		//GetCharacterMovement()->DisableMovement();
 		int Die_Rand = FMath::RandRange(0,3);
 
 		if(Die_Rand == 0)
