@@ -48,6 +48,10 @@ void AZombie_AIController::Tick(float DeltaSeconds)
 void AZombie_AIController::BeginPlay()
 {
 	Super::BeginPlay();
-
-	Main = Cast<AMain>(UGameplayStatics::GetPlayerPawn(GetWorld(),0));
 }
+
+void AZombie_AIController::Reset_Target()
+{
+	Blackboard->SetValueAsObject(TargetKey,nullptr);
+}
+

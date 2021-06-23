@@ -3,13 +3,15 @@
 #pragma once
 
 #include "CoreMinimal.h"
+
+#include "GenericTeamAgentInterface.h"
 #include "GameFramework/Actor.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 
 #include "Grenade.generated.h"
 
 UCLASS()
-class JUNE_API AGrenade : public AActor
+class JUNE_API AGrenade : public AActor, public IGenericTeamAgentInterface
 {
 	GENERATED_BODY()
 	
@@ -22,6 +24,10 @@ public:
 
 	UPROPERTY(EditAnywhere,BlueprintReadOnly)
 	class UProjectileMovementComponent* Projectile;
+
+	FGenericTeamId TeamId;
+
+	virtual FGenericTeamId GetGenericTeamId() const override;
 
 	UFUNCTION()
 	void OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit);

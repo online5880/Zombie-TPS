@@ -6,12 +6,14 @@
 #include "Interact_Interface.h"
 #include "Main_AnimInstance.h"
 #include "Item_Base.h"
+#include "Zombie_AIController.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Components/AudioComponent.h"
+#include "Perception/AISense_Hearing.h"
 #include "Sound/SoundCue.h"
 
 // Sets default values
@@ -35,6 +37,9 @@ AMain::AMain()
 
 	AudioComponent = CreateDefaultSubobject<UAudioComponent>(TEXT("Audio Component"));
 	AudioComponent->SetupAttachment(RootComponent);
+
+	AIPerceptionStimuliSourceComponent = CreateDefaultSubobject<UAIPerceptionStimuliSourceComponent>(TEXT("AIPerceptionStimuliSourceComponent"));
+	AIPerceptionStimuliSourceComponent->bAutoRegister;
 
 	Inventory_Capacity = 10;
 
@@ -319,10 +324,14 @@ float AMain::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, ACo
 
 	//GEngine->AddOnScreenDebugMessage(-1,1.5f,FColor::Red, FString::Printf(TEXT("공격받음"),false));
 
+	Zombie_Base = Cast<AZombie_Base>(DamageCauser);
+
 	if(Health - DamageAmount <= 0.f && !bDie)
 	{
 		Health -= DamageAmount;
 		bDie = true;
+		Tags.Remove("Player");
+		Zombie_Base->Zombie_AIController->Reset_Target(); /// Blackboard TargetKey -> nullptr
 		Die();
 		return DamageAmount;
 	}
@@ -401,6 +410,7 @@ void AMain::Fire()
 	if(bFire)
 	{
 		Weapon_Base->Fire();
+		UAISense_Hearing::ReportNoiseEvent(GetWorld(),GetActorLocation(),1.f,this,0.f,FName("Weapon Noise"));
 		GetWorld()->GetTimerManager().SetTimer(Rifle_Fire_Timer,this,&AMain::Fire,0.1f,false);
 	}
 }

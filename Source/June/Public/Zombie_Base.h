@@ -58,6 +58,7 @@ public:
 		return Zombie_State;
 	}
 
+	UFUNCTION(BlueprintCallable)
 	void SetZombie_State(EZombie_State State)
 	{
 		this->Zombie_State = State;

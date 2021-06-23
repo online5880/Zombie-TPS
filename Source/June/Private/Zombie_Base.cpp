@@ -98,6 +98,7 @@ void AZombie_Base::Tick(float DeltaTime)
 	if(Leg_Health==0.f)
 	{
 		bDamaged_Leg =true;
+		SetZombie_State(EZombie_State::Ground);
 	}
 	switch (Zombie_State)
 	{
@@ -106,6 +107,9 @@ void AZombie_Base::Tick(float DeltaTime)
 			break;
 		case EZombie_State::Chase:
 			GetCharacterMovement()->MaxWalkSpeed = 300.f;
+			break;
+		case EZombie_State::Ground:
+			GetCharacterMovement()->MaxWalkSpeed = 30.f;
 			break;
 	}
 }
@@ -219,6 +223,7 @@ float AZombie_Base::TakeDamage(float DamageAmount, FDamageEvent const& DamageEve
 
 void AZombie_Base::Die()
 {
+	Zombie_AIController->Destroy();
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	GetCharacterMovement()->SetActive(false);
 	AudioComponent->DestroyComponent();

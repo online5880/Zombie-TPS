@@ -5,6 +5,7 @@
 
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "Perception/AISense_Hearing.h"
 
 // Sets default values
 AGrenade::AGrenade()
@@ -18,14 +19,26 @@ AGrenade::AGrenade()
 	Projectile = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("Projectile"));
 	Projectile->bShouldBounce = true;
 
+	TeamId = FGenericTeamId(0);
+	Tags.Add("Player");
+}
+
+FGenericTeamId AGrenade::GetGenericTeamId() const
+{
+	return TeamId;
 }
 
 void AGrenade::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent,
-	FVector NormalImpulse, const FHitResult& Hit)
+                     FVector NormalImpulse, const FHitResult& Hit)
 {
 	if(OtherActor != this)
 	{
 		//GEngine->AddOnScreenDebugMessage(-1,1.5f,FColor::Red, FString::Printf(TEXT("수류탄")));
+		FTimerHandle Noise_Timer;
+		GetWorld()->GetTimerManager().SetTimer(Noise_Timer,[this]()
+		{
+			UAISense_Hearing::ReportNoiseEvent(GetWorld(),GetActorLocation(),1.f,this,0.f,FName("Weapon Noise"));
+		},0.9f,false);
 	}
 }
 

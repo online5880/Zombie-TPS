@@ -7,9 +7,12 @@
 #include "GenericTeamAgentInterface.h"
 #include "Grenade.h"
 #include "Weapon_Base.h"
+#include "Zombie_Base.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "Perception/AIPerceptionStimuliSourceComponent.h"
+
 #include "Main.generated.h"
 
 UENUM(BlueprintType)
@@ -41,6 +44,8 @@ public:
 	// Sets default values for this character's properties
 	AMain();
 
+	class AZombie_Base* Zombie_Base;
+
 	/************************ 카메라 ***********************/
 	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category = "Camera")
 	class USpringArmComponent* SpringArmComponent;
@@ -50,6 +55,8 @@ public:
 	/**************************** 몸 ***********************/
 	UPROPERTY(EditAnywhere,BlueprintReadOnly, Category = "Body")
 	class USkeletalMeshComponent* Body_Mesh;
+
+	class UAIPerceptionStimuliSourceComponent* AIPerceptionStimuliSourceComponent;
 	/**************************** 사운드 ***********************/
 	class UAudioComponent* AudioComponent;
 
@@ -75,6 +82,7 @@ public:
 
 	void Die();
 
+	UPROPERTY(BlueprintReadOnly)
 	bool bDie;
 
 	FGenericTeamId TeamId;

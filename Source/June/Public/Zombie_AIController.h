@@ -18,6 +18,13 @@ class JUNE_API AZombie_AIController : public AAIController
 {
 	GENERATED_BODY()
 
+	public:
+
+	UPROPERTY(BlueprintReadOnly)
+	class AZombie_Base* Zombie_Base;
+
+	void Reset_Target();
+
 	private:
 
 	AZombie_AIController();
@@ -29,11 +36,7 @@ class JUNE_API AZombie_AIController : public AAIController
 	virtual void OnPossess(APawn* InPawn) override;
 
 	virtual void Tick(float DeltaSeconds) override;
-
-	class AZombie_Base* Zombie_Base;
-
-	class AMain* Main;
-
+	
 	virtual void BeginPlay() override;
 
 	public:
