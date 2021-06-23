@@ -158,7 +158,7 @@ void AZombie_Base::Attack()
 				OutHit.Actor->TakeDamage(10.f,DamageEvent,nullptr,this);
 			}
 		}
-		},0.2f,false);
+		},0.3f,false);
 	}
 }
 
