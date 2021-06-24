@@ -34,6 +34,8 @@ AZombie_Base::AZombie_Base()
 	AudioComponent->SetupAttachment(RootComponent);
 	
 	Tags.Add("Zombie");
+
+	SetReplicates(true);
 	/************************ 애니메이션 ***********************/
 	static ConstructorHelpers::FObjectFinder<UAnimMontage>
 	React(TEXT("AnimMontage'/Game/Zombies/Zombie_1/Anim/Anim_Zombie_hit_Montage.Anim_Zombie_hit_Montage'"));
@@ -135,7 +137,6 @@ void AZombie_Base::Attack()
 			AudioComponent->SetSound(Attack_Sound);
 			AudioComponent->Play();
 			FHitResult OutHit;
-			UWorld* World = GetWorld();
 			FCollisionQueryParams CollisionParams;
 			CollisionParams.AddIgnoredActor(this);
 			FVector Start = GetCapsuleComponent()->GetComponentLocation();
@@ -158,14 +159,13 @@ void AZombie_Base::Attack()
 				OutHit.Actor->TakeDamage(10.f,DamageEvent,nullptr,this);
 			}
 		}
-		},0.3f,false);
+		},0.5f,false);
 	}
 }
 
 void AZombie_Base::Attack_End()
 {
 	bIsAttacking = false;
-	//AttackEnd.Execute();
 	//GEngine->AddOnScreenDebugMessage(-1,1.5f,FColor::Red, FString::Printf(TEXT("공격 끝"),false));
 }
 
@@ -203,8 +203,6 @@ float AZombie_Base::TakeDamage(float DamageAmount, FDamageEvent const& DamageEve
 
 			/*** 좀비 타겟 설정 ***/
 			Zombie_AIController->GetBlackboardComponent()->SetValueAsObject(AZombie_AIController::TargetKey,DamageCauser);
-			/*** 좀비 타겟 초기화 ***/
-			
 			/*** 좀비 속도 ***/
 			SetZombie_State(EZombie_State::Chase);
 			FTimerHandle Speed_Timer;

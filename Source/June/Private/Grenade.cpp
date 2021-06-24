@@ -21,6 +21,8 @@ AGrenade::AGrenade()
 
 	TeamId = FGenericTeamId(0);
 	Tags.Add("Player");
+
+	SetReplicates(true);
 }
 
 FGenericTeamId AGrenade::GetGenericTeamId() const

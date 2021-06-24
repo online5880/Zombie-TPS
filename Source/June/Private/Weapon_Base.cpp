@@ -26,6 +26,8 @@ AWeapon_Base::AWeapon_Base()
 	AudioComponent = CreateDefaultSubobject<UAudioComponent>(TEXT("Audio Component"));
 	AudioComponent->bAutoActivate = false;
 	AudioComponent->SetupAttachment(RootComponent);
+
+	SetReplicates(true);
 	/************************ 나이아가라 ***********************/
 	static ConstructorHelpers::FObjectFinder<UNiagaraSystem>
 	Rifle_Muzzle(TEXT("NiagaraSystem'/Game/Realistic_Starter_VFX_Pack_Niagara/Niagara/MuzzleFlash/NS_MuzzleFlash_01.NS_MuzzleFlash_01'"));
@@ -90,8 +92,7 @@ void AWeapon_Base::BeginPlay()
 {
 	Super::BeginPlay();
 
-	AActor* Actor = UGameplayStatics::GetActorOfClass(GetWorld(),TSubActor);
-	Main = Cast<AMain>(Actor);
+	Main = Cast<AMain>(UGameplayStatics::GetPlayerCharacter(GetWorld(),0));
 }
 void AWeapon_Base::Interact()
 {

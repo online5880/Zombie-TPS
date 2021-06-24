@@ -27,6 +27,8 @@ AProjectile_Base::AProjectile_Base()
 
 	ProjectileMovementComponent = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("Projectile"));
 
+	SetReplicates(true);
+
 	static ConstructorHelpers::FObjectFinder<UNiagaraSystem>
 	Normal(TEXT("NiagaraSystem'/Game/Realistic_Starter_VFX_Pack_Niagara/Niagara/Impact/NS_Impact_Rock.NS_Impact_Rock'"));
 	if(Normal.Succeeded())

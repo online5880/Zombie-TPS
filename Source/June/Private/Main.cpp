@@ -13,6 +13,7 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Components/AudioComponent.h"
+#include "Net/UnrealNetwork.h"
 #include "Perception/AISense_Hearing.h"
 #include "Sound/SoundCue.h"
 
@@ -48,6 +49,10 @@ AMain::AMain()
 
 	Tags.Add("Player");
 	TeamId = FGenericTeamId(0);
+
+	SetReplicates(true);
+	bReplicates = true;
+	
 	/************************ 애니메이션 ************************/
 	static ConstructorHelpers::FObjectFinder<UAnimMontage>
 	Equip_Rifle(TEXT("AnimMontage'/Game/Main/Anim/Rifle/IP/EquipRifle_Montage.EquipRifle_Montage'"));
@@ -186,6 +191,62 @@ void AMain::ServerSprint_End_Implementation()
 {
 	GetCharacterMovement()->MaxWalkSpeed = 600.f;
 }
+
+void AMain::ServerInteract_Implementation()
+{
+	FVector Capsule_Location = GetCapsuleComponent()->GetComponentLocation();
+	FVector Start = FVector(Capsule_Location.X,Capsule_Location.Y,Capsule_Location.Z+88.f);
+	FVector Controller_Vector = UKismetMathLibrary::GetForwardVector(GetControlRotation());
+	FVector End = (Start+(Controller_Vector * 250.f));
+
+	if(AActor* HitActor = LineTraceSingle(Start,End).GetActor())
+	{
+		if(IInteract_Interface* Interact = Cast<IInteract_Interface>(HitActor))
+		{
+			if(Interact)
+			{
+				Interact->Interact();
+			}
+		}
+	}
+}
+bool AMain::ServerInteract_Validate()
+{
+	return true;
+}
+
+void AMain::ServerEquipRifle_Implementation()
+{
+	TArray<AActor*> Attached_Actors;
+	GetAttachedActors(Attached_Actors);
+	FString Rifle = "Weapon_Base_BP";
+	
+	for(auto Actor : Attached_Actors)
+	{
+		if(Rifle == UKismetSystemLibrary::GetDisplayName(Actor))
+		{
+			Weapon_Base = Cast<AWeapon_Base>(Actor);
+			break;
+		}
+	}
+	
+	if(AnimInstance)
+	{
+		if(!AnimInstance->IsAnyMontagePlaying() && Weapon_Base && !(Get_Weapon_State() == EWeaponState::Rifle))
+		{
+			AnimInstance->Montage_Play(Equip_Rifle_Montage);			
+			GetWorld()->GetTimerManager().SetTimer(Rifle_Timer,[this]()
+			{
+				Weapon_Base->AttachToComponent(GetMesh(),FAttachmentTransformRules::SnapToTargetIncludingScale,FName("Weapon_Socket"));
+				Set_Weapon_State(EWeaponState::Rifle);
+			},0.5f,false);
+		}
+	}
+}
+bool AMain::ServerEquipRifle_Validate()
+{
+	return true;
+}
 /******************************************************** 행동 ********************************************************/
 void AMain::MoveForward(float Value)
 {
@@ -316,6 +377,10 @@ void AMain::Interact()
 				Interact->Interact();
 			}
 		}
+	}
+	if(!HasAuthority())
+	{
+		ServerInteract();
 	}
 }
 
@@ -546,6 +611,10 @@ void AMain::Equip_Rifle()
 				Set_Weapon_State(EWeaponState::Rifle);
 			},0.5f,false);
 		}
+	}
+	if(!HasAuthority())
+	{
+		ServerEquipRifle();
 	}
 }
 /******************************************************** 수류탄 ********************************************************/

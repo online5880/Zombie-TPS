@@ -42,6 +42,7 @@ class JUNE_API AMain : public ACharacter, public IGenericTeamAgentInterface
 
 public:
 	// Sets default values for this character's properties
+	
 	AMain();
 
 	class AZombie_Base* Zombie_Base;
@@ -105,6 +106,8 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	/************************ 서버 ************************/
+	//virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+	
 	UFUNCTION(Server,Unreliable,WithValidation)
 	void ServerWalk_Start();
 	bool ServerWalk_Start_Validate();
@@ -124,6 +127,16 @@ public:
 	void ServerSprint_End();
 	bool ServerSprint_End_Validate();
 	void ServerSprint_End_Implementation();
+
+	UFUNCTION(Server,Unreliable,WithValidation)
+	void ServerInteract();
+	bool ServerInteract_Validate();
+	void ServerInteract_Implementation();
+
+	UFUNCTION(Server,Unreliable,WithValidation)
+	void ServerEquipRifle();
+	bool ServerEquipRifle_Validate();
+	void ServerEquipRifle_Implementation();
 	/************************ 행동 ************************/
 	UFUNCTION()
 	void MoveForward(float Value); ////// 속도
@@ -152,12 +165,12 @@ public:
 
 	void Sprint_End();
 
-	FHitResult LineTraceSingle(const FVector& StartLocation,const FVector& EndLocation); // 라인트레이스
+	FHitResult LineTraceSingle(const FVector& StartLocation,const FVector& EndLocation); /// 라인트레이스
 
-	void LineTrace(); // 라인트레이스
+	void LineTrace(); /// 라인트레이스
 
 	UFUNCTION(BlueprintImplementableEvent)
-	void Get_Actor_Name(const FText& Text); // 액터 이름 얻어오기
+	void Get_Actor_Name(const FText& Text); /// 액터 이름 얻어오기
 
 	bool bTextCleard;
 
@@ -226,7 +239,7 @@ public:
 	/************************ 라이플 ************************/
 	void Equip_Rifle(); // 라이플 장착
 
-	UPROPERTY(EditAnywhere,BlueprintReadOnly)
+	UPROPERTY(EditAnywhere,BlueprintReadOnly,Replicated)
 	bool bEquip_Rifle; // 라이플 장착 확인
 
 	FTimerHandle Rifle_Timer;
