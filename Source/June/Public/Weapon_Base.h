@@ -21,6 +21,21 @@ class JUNE_API AWeapon_Base : public AActor, public IInteract_Interface, public 
 public:	
 	// Sets default values for this actor's properties
 	AWeapon_Base();
+	/************************ 서버 ************************/
+	UFUNCTION(Server,reliable,WithValidation)
+	void ServerFire();
+	bool ServerFire_Validate();
+	void ServerFire_Implementation();
+
+	UFUNCTION(Server,reliable,WithValidation)
+	void ServerFire_Start();
+	bool ServerFire_Start_Validate();
+	void ServerFire_Start_Implementation();
+
+	UFUNCTION(Server,reliable,WithValidation)
+	void ServerFire_End();
+	bool ServerFire_End_Validate();
+	void ServerFire_End_Implementation();
 	/************************ 몸 ***********************/
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category ="Weapon")
 	class USkeletalMeshComponent* Body_Mesh;

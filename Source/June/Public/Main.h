@@ -128,10 +128,15 @@ public:
 	bool ServerSprint_End_Validate();
 	void ServerSprint_End_Implementation();
 
-	UFUNCTION(Server,Unreliable,WithValidation)
+	UFUNCTION(Server,reliable,WithValidation)
 	void ServerInteract();
 	bool ServerInteract_Validate();
 	void ServerInteract_Implementation();
+
+	UFUNCTION(NetMulticast,reliable,WithValidation)
+	void MultiInteract();
+	bool MultiInteract_Validate();
+	void MultiInteract_Implementation();
 
 	UFUNCTION(Server,Unreliable,WithValidation)
 	void ServerEquipRifle();

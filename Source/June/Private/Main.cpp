@@ -194,6 +194,23 @@ void AMain::ServerSprint_End_Implementation()
 
 void AMain::ServerInteract_Implementation()
 {
+	MultiInteract();
+	//GEngine->AddOnScreenDebugMessage(-1,1.5f,FColor::Red, FString::Printf(TEXT("Server")));
+	UE_LOG(LogTemp,Warning,TEXT("Server"));
+}
+
+bool AMain::ServerInteract_Validate()
+{
+	return true;
+}
+
+bool AMain::MultiInteract_Validate()
+{
+	return true;
+}
+
+void AMain::MultiInteract_Implementation()
+{
 	FVector Capsule_Location = GetCapsuleComponent()->GetComponentLocation();
 	FVector Start = FVector(Capsule_Location.X,Capsule_Location.Y,Capsule_Location.Z+88.f);
 	FVector Controller_Vector = UKismetMathLibrary::GetForwardVector(GetControlRotation());
@@ -209,11 +226,10 @@ void AMain::ServerInteract_Implementation()
 			}
 		}
 	}
+	//GEngine->AddOnScreenDebugMessage(-1,1.5f,FColor::Red, FString::Printf(TEXT("Multi")));
+	UE_LOG(LogTemp,Warning,TEXT("Multi"));
 }
-bool AMain::ServerInteract_Validate()
-{
-	return true;
-}
+
 
 void AMain::ServerEquipRifle_Implementation()
 {
@@ -363,22 +379,11 @@ void AMain::LineTrace()
 
 void AMain::Interact()
 {
-	FVector Capsule_Location = GetCapsuleComponent()->GetComponentLocation();
-	FVector Start = FVector(Capsule_Location.X,Capsule_Location.Y,Capsule_Location.Z+88.f);
-	FVector Controller_Vector = UKismetMathLibrary::GetForwardVector(GetControlRotation());
-	FVector End = (Start+(Controller_Vector * 250.f));
-
-	if(AActor* HitActor = LineTraceSingle(Start,End).GetActor())
+	if(HasAuthority())
 	{
-		if(IInteract_Interface* Interact = Cast<IInteract_Interface>(HitActor))
-		{
-			if(Interact)
-			{
-				Interact->Interact();
-			}
-		}
+		MultiInteract();
 	}
-	if(!HasAuthority())
+	else
 	{
 		ServerInteract();
 	}
