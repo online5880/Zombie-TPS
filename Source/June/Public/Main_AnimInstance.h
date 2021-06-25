@@ -60,10 +60,10 @@ class JUNE_API UMain_AnimInstance : public UAnimInstance
 	UPROPERTY(BlueprintReadOnly)
 	class AMain* Main;
 	/************************ 서버 ************************/
-	UFUNCTION(Server,Reliable,WithValidation)
-	void ServerController_Yaw(float fYaw);
-	bool ServerController_Yaw_Validate(float fYaw);
-	void ServerController_Yaw_Implementation(float fYaw);
+	UFUNCTION(NetMulticast,Reliable,WithValidation)
+	void MultiController_Yaw(float fYaw);
+	bool MultiController_Yaw_Validate(float fYaw);
+	void MultiController_Yaw_Implementation(float fYaw);
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 };

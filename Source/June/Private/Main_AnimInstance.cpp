@@ -48,15 +48,15 @@ void UMain_AnimInstance::UpdateAnimationProperties()
 		MovementSpeed = LateralSpeed.Size();
 		Direction = CalculateDirection(Speed,Pawn->GetActorRotation());
 		bAiming = Main->bAiming;
+		Controller_Yaw = Pawn->GetControlRotation().Pitch;
 		if(bAiming)
 		{
-			Controller_Yaw = Pawn->GetControlRotation().Pitch;
-			//ServerController_Yaw(Controller_Yaw);
+			MultiController_Yaw(Controller_Yaw);
 		}
 		else
 		{
 			Controller_Yaw = 0.f;
-			//ServerController_Yaw(0.f);
+			MultiController_Yaw(0.f);
 		}
 		bIsAir = Pawn->GetMovementComponent()->IsFalling();
 	}
@@ -79,12 +79,12 @@ void UMain_AnimInstance::Footstep()
 	}
 }
 
-bool UMain_AnimInstance::ServerController_Yaw_Validate(float fYaw)
+bool UMain_AnimInstance::MultiController_Yaw_Validate(float fYaw)
 {
 	return true;
 }
 
-void UMain_AnimInstance::ServerController_Yaw_Implementation(float fYaw)
+void UMain_AnimInstance::MultiController_Yaw_Implementation(float fYaw)
 {
 	Controller_Yaw = Yaw;
 }

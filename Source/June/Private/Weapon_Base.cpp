@@ -185,10 +185,10 @@ void AWeapon_Base::MultiFire_Start_Implementation(class AMain* Actor)
 				UGameplayStatics::SpawnDecalAtLocation(this,Blood_Decal[Ground_Random],Ground_Blood_Size,Literal_Location,Ground_Blood_Rotate,12.f);
 				Blood_Splatter_Decal(OutHit.ImpactPoint,End_Blood);
 				
-				UGameplayStatics::ApplyDamage(Zombie_Base,Rifle_Damage,nullptr,Actor,nullptr);
+				UGameplayStatics::ApplyDamage(Zombie_Base,Rifle_Damage,nullptr,this,nullptr);
 				if(OutHit.BoneName.ToString()=="Head")
 				{
-					UGameplayStatics::ApplyPointDamage(OutHit.GetActor(),Rifle_Damage*1.5f,OutHit.GetActor()->GetActorLocation(),OutHit,nullptr,Actor,nullptr);
+					UGameplayStatics::ApplyPointDamage(OutHit.GetActor(),Rifle_Damage*1.5f,OutHit.GetActor()->GetActorLocation(),OutHit,nullptr,this,nullptr);
 				}
 				if(OutHit.BoneName.ToString()=="thigh_l" || OutHit.BoneName.ToString()=="thigh_r")
 				{
@@ -196,7 +196,7 @@ void AWeapon_Base::MultiFire_Start_Implementation(class AMain* Actor)
 				}
 			}
 		}
-		UNiagaraFunctionLibrary::SpawnSystemAttached(Rifle_Muzzle_Niagara,Body_Mesh,FName("b_gun_muzzleflash"),FVector::ZeroVector,FRotator::ZeroRotator,EAttachLocation::KeepRelativeOffset,true,true);
+		UNiagaraFunctionLibrary::SpawnSystemAttached(Rifle_Muzzle_Niagara,Body_Mesh,FName("b_gun_muzzleflash"),FVector::ZeroVector,FRotator::ZeroRotator,EAttachLocation::SnapToTargetIncludingScale,true,true);
 	}		
 }
 

@@ -202,7 +202,7 @@ float AZombie_Base::TakeDamage(float DamageAmount, FDamageEvent const& DamageEve
 			GetCharacterMovement()->MaxWalkSpeed = 300.f;
 
 			/*** 좀비 타겟 설정 ***/
-			Zombie_AIController->GetBlackboardComponent()->SetValueAsObject(AZombie_AIController::TargetKey,DamageCauser);
+			//Zombie_AIController->GetBlackboardComponent()->SetValueAsObject(AZombie_AIController::TargetKey,DamageCauser);
 			/*** 좀비 속도 ***/
 			SetZombie_State(EZombie_State::Chase);
 			FTimerHandle Speed_Timer;
