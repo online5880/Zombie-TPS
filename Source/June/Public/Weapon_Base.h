@@ -22,20 +22,42 @@ public:
 	// Sets default values for this actor's properties
 	AWeapon_Base();
 	/************************ 서버 ************************/
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+	
 	UFUNCTION(Server,reliable,WithValidation)
 	void ServerFire();
 	bool ServerFire_Validate();
 	void ServerFire_Implementation();
 
+	UFUNCTION(NetMulticast,reliable,WithValidation)
+	void MultiFire();
+	bool MultiFire_Validate();
+	void MultiFire_Implementation();
+
 	UFUNCTION(Server,reliable,WithValidation)
-	void ServerFire_Start();
-	bool ServerFire_Start_Validate();
-	void ServerFire_Start_Implementation();
+	void ServerFire_Start(class AMain* Actor);
+	bool ServerFire_Start_Validate(class AMain* Actor);
+	void ServerFire_Start_Implementation(class AMain* Actor);
+
+	UFUNCTION(NetMulticast,reliable,WithValidation)
+	void MultiFire_Start(class AMain* Actor);
+	bool MultiFire_Start_Validate(class AMain* Actor);
+	void MultiFire_Start_Implementation(class AMain* Actor);
 
 	UFUNCTION(Server,reliable,WithValidation)
 	void ServerFire_End();
 	bool ServerFire_End_Validate();
 	void ServerFire_End_Implementation();
+
+	UFUNCTION(Server,reliable,WithValidation)
+	void ServerInteract(class AMain* Actor);
+	bool ServerInteract_Validate(class AMain* Actor);
+	void ServerInteract_Implementation(class AMain* Actor);
+
+	UFUNCTION(NetMulticast,reliable,WithValidation)
+	void MultiInteract(class AMain* Actor);
+	bool MultiInteract_Validate(class AMain* Actor);
+	void MultiInteract_Implementation(class AMain* Actor);
 	/************************ 몸 ***********************/
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category ="Weapon")
 	class USkeletalMeshComponent* Body_Mesh;
@@ -46,21 +68,21 @@ public:
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category = "Weapon")
 	FString Weapon_Name;
 
-	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category = "Weapon")
+	UPROPERTY(EditAnywhere,BlueprintReadWrite,Replicated,Category = "Weapon")
 	int32 Ammo;
 
-	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category = "Weapon")
+	UPROPERTY(EditAnywhere,BlueprintReadWrite,Replicated,Category = "Weapon")
 	int32 MaxAmmo;
 
-	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category = "Weapon")
+	UPROPERTY(EditAnywhere,BlueprintReadWrite,Replicated,Category = "Weapon")
 	int32 HaveAmmo;
 
 	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category = "Weapon")
 	float Rifle_Damage;
 	/************************ 발사 ***********************/
-	void Fire();
+	void Fire(class AMain* Actor);
 	
-	void Fire_Start();
+	void Fire_Start(class AMain* Actor);
 
 	void Fire_End();
 
@@ -100,7 +122,7 @@ protected:
 
 public:	
 
-	virtual void Interact() override;
+	virtual void Interact(AMain* Actor) override;
 
 	virtual FString Get_Name() override;
 

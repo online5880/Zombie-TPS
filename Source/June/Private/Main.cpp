@@ -93,7 +93,6 @@ AMain::AMain()
 	static ConstructorHelpers::FObjectFinder<UAnimMontage>
 	Die(TEXT("AnimMontage'/Game/Main/Anim/Rifle/IP/Rifle_Death_Montage.Rifle_Death_Montage'"));
 	if(Die.Succeeded()) { Die_Montage = Die.Object;}
-	
 }
 FGenericTeamId AMain::GetGenericTeamId() const
 {
@@ -195,8 +194,6 @@ void AMain::ServerSprint_End_Implementation()
 void AMain::ServerInteract_Implementation()
 {
 	MultiInteract();
-	//GEngine->AddOnScreenDebugMessage(-1,1.5f,FColor::Red, FString::Printf(TEXT("Server")));
-	UE_LOG(LogTemp,Warning,TEXT("Server"));
 }
 
 bool AMain::ServerInteract_Validate()
@@ -222,16 +219,28 @@ void AMain::MultiInteract_Implementation()
 		{
 			if(Interact)
 			{
-				Interact->Interact();
+				Interact->Interact(this);
 			}
 		}
 	}
-	//GEngine->AddOnScreenDebugMessage(-1,1.5f,FColor::Red, FString::Printf(TEXT("Multi")));
-	UE_LOG(LogTemp,Warning,TEXT("Multi"));
 }
 
-
 void AMain::ServerEquipRifle_Implementation()
+{
+	MultiEquipRifle();
+}
+
+bool AMain::ServerEquipRifle_Validate()
+{
+	return true;
+}
+
+bool AMain::MultiEquipRifle_Validate()
+{
+	return true;
+}
+
+void AMain::MultiEquipRifle_Implementation()
 {
 	TArray<AActor*> Attached_Actors;
 	GetAttachedActors(Attached_Actors);
@@ -259,10 +268,189 @@ void AMain::ServerEquipRifle_Implementation()
 		}
 	}
 }
-bool AMain::ServerEquipRifle_Validate()
+
+bool AMain::ServerUnEquipRifle_Validate()
 {
 	return true;
 }
+
+void AMain::ServerUnEquipRifle_Implementation()
+{
+	MultiUnEquipRifle();
+}
+
+bool AMain::MultiUnEquipRifle_Validate()
+{
+	return true;
+}
+
+void AMain::MultiUnEquipRifle_Implementation()
+{
+	TArray<AActor*> Attached_Actors;
+	GetAttachedActors(Attached_Actors);
+	FString Rifle = "Weapon_Base_BP";
+	
+	for(auto Actor : Attached_Actors)
+	{
+		if(Rifle == UKismetSystemLibrary::GetDisplayName(Actor))
+		{
+			Weapon_Base = Cast<AWeapon_Base>(Actor);
+			break;
+		}
+	}
+	
+	if(!AnimInstance->IsAnyMontagePlaying() && Weapon_Base && !(Get_Weapon_State() == EWeaponState::Normal))
+	{
+		switch (Weapon_State)
+		{
+		case EWeaponState::Rifle:
+			AnimInstance->Montage_Play(UnEquip_Rifle_Montage);
+			GetWorld()->GetTimerManager().SetTimer(Rifle_Timer,[this]()
+			{
+				Weapon_Base->AttachToComponent(GetMesh(),FAttachmentTransformRules::SnapToTargetIncludingScale,FName("Rifle_Socket"));
+			},1.1f,false);
+			Set_Weapon_State(EWeaponState::Normal);
+			break;
+		}
+	}
+}
+
+bool AMain::ServerAiming_Validate(bool ServerAiming)
+{
+	return true;
+}
+
+void AMain::ServerAiming_Implementation(bool ServerAiming)
+{
+	MultiAiming(ServerAiming);
+}
+
+bool AMain::MultiAiming_Validate(bool MultiAiming)
+{
+	return true;
+}
+
+void AMain::MultiAiming_Implementation(bool MultiAiming)
+{
+	if(!bDie)
+	{
+		switch (Weapon_State)
+		{
+		case EWeaponState::Rifle:
+			if(!AnimInstance->IsAnyMontagePlaying() && Weapon_Base && !bAiming && !bReloading && !bIsGrenade)
+			{
+				AnimInstance->Montage_Play(Rifle_Aiming_Montage);
+				bAiming = true;
+				break;
+			}
+		}
+	}
+}
+
+bool AMain::ServerAiming_End_Validate(bool ServerAiming)
+{
+	return true;
+}
+
+void AMain::ServerAiming_End_Implementation(bool ServerAiming)
+{
+	MultiAiming_End(ServerAiming);
+}
+
+bool AMain::MultiAiming_End_Validate(bool MultiAiming)
+{
+	return true;
+}
+
+void AMain::MultiAiming_End_Implementation(bool MultiAiming)
+{
+	bAiming = false;
+	AnimInstance->Montage_Stop(0.1f,Rifle_Aiming_Montage);
+}
+
+bool AMain::ServerFire_Validate(bool bServerFire)
+{
+	return true;
+}
+
+void AMain::ServerFire_Implementation(bool bServerFire)
+{
+	MultiFire(bServerFire);
+}
+
+bool AMain::MultiFire_Validate(bool bMultiFire)
+{
+	return true;
+}
+
+void AMain::MultiFire_Implementation(bool bMultiFire)
+{
+	if(bMultiFire)
+	{
+		Weapon_Base->Fire(this);
+		UAISense_Hearing::ReportNoiseEvent(GetWorld(),GetActorLocation(),1.f,this,0.f,FName("Weapon Noise"));
+		GetWorld()->GetTimerManager().SetTimer(Rifle_Fire_Timer,this,&AMain::Fire,0.1f,false);
+	}
+}
+
+bool AMain::ServerFire_Start_Validate()
+{
+	return true;
+}
+
+void AMain::ServerFire_Start_Implementation()
+{
+	MultiFire_Start();
+}
+
+bool AMain::MultiFire_Start_Validate()
+{
+	return true;
+}
+
+void AMain::MultiFire_Start_Implementation()
+{
+	if(Get_Weapon_State() == EWeaponState::Rifle && bAiming && !bDie)
+	{
+		bFire = true;
+		AnimInstance->Montage_Play(Rifle_Firing_Montage);
+		Fire();
+		SetState(EState::Fire);
+	}
+}
+
+bool AMain::ServerFire_End_Validate()
+{
+	return true;
+}
+
+void AMain::ServerFire_End_Implementation()
+{
+	MultiFire_End();
+}
+
+bool AMain::MultiFire_End_Validate()
+{
+	return true;
+}
+
+void AMain::MultiFire_End_Implementation()
+{
+	bFire= false;
+	AnimInstance->Montage_Stop(0.1f,Rifle_Firing_Montage);
+	if(bAiming)
+	{
+		AnimInstance->Montage_Play(Rifle_Aiming_Montage,1.f,EMontagePlayReturnType::MontageLength,3.f);		
+	}
+}
+
+void AMain::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME(AMain,bAiming);
+	DOREPLIFETIME(AMain,bFire);
+}
+
 /******************************************************** 행동 ********************************************************/
 void AMain::MoveForward(float Value)
 {
@@ -443,6 +631,7 @@ float AMain::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, ACo
 	}
 	return DamageAmount;
 }
+
 void AMain::Die()
 {
 	if(bDie)
@@ -480,56 +669,62 @@ void AMain::Die()
 /******************************************************** 라이플 ********************************************************/
 void AMain::Fire()
 {
-	if(bFire)
+	if(HasAuthority())
 	{
-		Weapon_Base->Fire();
-		UAISense_Hearing::ReportNoiseEvent(GetWorld(),GetActorLocation(),1.f,this,0.f,FName("Weapon Noise"));
-		GetWorld()->GetTimerManager().SetTimer(Rifle_Fire_Timer,this,&AMain::Fire,0.1f,false);
+		MultiFire(bFire);
+	}
+	else
+	{
+		ServerFire(bFire);
 	}
 }
 
 void AMain::Fire_Start()
 {
-	if(Get_Weapon_State() == EWeaponState::Rifle && bAiming && !bDie)
+	if(HasAuthority())
 	{
-		bFire = true;
-		AnimInstance->Montage_Play(Rifle_Firing_Montage);
-		Fire();
-		SetState(EState::Fire);
+		MultiFire_Start();
+	}
+	else
+	{
+		ServerFire_Start();
 	}
 }
 
 void AMain::Fire_End()
 {
-	bFire= false;
-	AnimInstance->Montage_Stop(0.1f,Rifle_Firing_Montage);
-	if(bAiming)
+	if(HasAuthority())
 	{
-		AnimInstance->Montage_Play(Rifle_Aiming_Montage,1.f,EMontagePlayReturnType::MontageLength,3.f);		
+		MultiFire_End();
+	}
+	else
+	{
+		ServerFire_End();
 	}
 }
 
 void AMain::Aiming()
 {
-	if(!bDie)
+	if(HasAuthority())
 	{
-		switch (Weapon_State)
-		{
-		case EWeaponState::Rifle:
-			if(!AnimInstance->IsAnyMontagePlaying() && Weapon_Base && !bAiming && !bReloading && !bIsGrenade)
-			{
-				AnimInstance->Montage_Play(Rifle_Aiming_Montage);
-				bAiming = true;
-				break;
-			}
-		}
+		MultiAiming(true);
+	}
+	else
+	{
+		ServerAiming(true);
 	}
 }
 
 void AMain::Aiming_End()
 {
-	bAiming = false;
-	AnimInstance->Montage_Stop(0.1f,Rifle_Aiming_Montage);
+	if(HasAuthority())
+	{
+		MultiAiming_End(false);
+	}
+	else
+	{
+		ServerAiming_End(false);
+	}
 }
 
 void AMain::Reload()
@@ -561,63 +756,23 @@ void AMain::Reload_End()
 
 void AMain::UnEquip()
 {
-	TArray<AActor*> Attached_Actors;
-	GetAttachedActors(Attached_Actors);
-	FString Rifle = "Weapon_Base_BP";
-	
-	for(auto Actor : Attached_Actors)
+	if(HasAuthority())
 	{
-		if(Rifle == UKismetSystemLibrary::GetDisplayName(Actor))
-		{
-			Weapon_Base = Cast<AWeapon_Base>(Actor);
-			break;
-		}
+		MultiUnEquipRifle();
 	}
-	
-	if(!AnimInstance->IsAnyMontagePlaying() && Weapon_Base && !(Get_Weapon_State() == EWeaponState::Normal))
+	else
 	{
-		switch (Weapon_State)
-		{
-		case EWeaponState::Rifle:
-			AnimInstance->Montage_Play(UnEquip_Rifle_Montage);
-			GetWorld()->GetTimerManager().SetTimer(Rifle_Timer,[this]()
-			{
-				Weapon_Base->AttachToComponent(GetMesh(),FAttachmentTransformRules::SnapToTargetIncludingScale,FName("Rifle_Socket"));
-			},1.1f,false);
-			Set_Weapon_State(EWeaponState::Normal);
-			break;
-		}
+		ServerUnEquipRifle();
 	}
 }
 
 void AMain::Equip_Rifle()
 {
-	TArray<AActor*> Attached_Actors;
-	GetAttachedActors(Attached_Actors);
-	FString Rifle = "Weapon_Base_BP";
-	
-	for(auto Actor : Attached_Actors)
+	if(HasAuthority())
 	{
-		if(Rifle == UKismetSystemLibrary::GetDisplayName(Actor))
-		{
-			Weapon_Base = Cast<AWeapon_Base>(Actor);
-			break;
-		}
+		MultiEquipRifle();
 	}
-	
-	if(AnimInstance)
-	{
-		if(!AnimInstance->IsAnyMontagePlaying() && Weapon_Base && !(Get_Weapon_State() == EWeaponState::Rifle))
-		{
-			AnimInstance->Montage_Play(Equip_Rifle_Montage);			
-			GetWorld()->GetTimerManager().SetTimer(Rifle_Timer,[this]()
-			{
-				Weapon_Base->AttachToComponent(GetMesh(),FAttachmentTransformRules::SnapToTargetIncludingScale,FName("Weapon_Socket"));
-				Set_Weapon_State(EWeaponState::Rifle);
-			},0.5f,false);
-		}
-	}
-	if(!HasAuthority())
+	else
 	{
 		ServerEquipRifle();
 	}

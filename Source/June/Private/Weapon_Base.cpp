@@ -28,7 +28,7 @@ AWeapon_Base::AWeapon_Base()
 	AudioComponent->SetupAttachment(RootComponent);
 
 	SetReplicates(true);
-	
+	bReplicates = true;
 	
 	/************************ 나이아가라 ***********************/
 	static ConstructorHelpers::FObjectFinder<UNiagaraSystem>
@@ -90,12 +90,17 @@ AWeapon_Base::AWeapon_Base()
 	}
 }
 
+void AWeapon_Base::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	DOREPLIFETIME(AWeapon_Base,Ammo);
+	DOREPLIFETIME(AWeapon_Base,HaveAmmo);
+	DOREPLIFETIME(AWeapon_Base,MaxAmmo);
+}
+
 // Called when the game starts or when spawned
 void AWeapon_Base::BeginPlay()
 {
 	Super::BeginPlay();
-
-	Main = Cast<AMain>(UGameplayStatics::GetPlayerCharacter(GetWorld(),0));
 }
 /******************************************************** 서버 ********************************************************/
 bool AWeapon_Base::ServerFire_Validate()
@@ -105,12 +110,21 @@ bool AWeapon_Base::ServerFire_Validate()
 
 void AWeapon_Base::ServerFire_Implementation()
 {
+	MultiFire();
+}
+
+bool AWeapon_Base::MultiFire_Validate()
+{
+	return true;
+}
+
+void AWeapon_Base::MultiFire_Implementation()
+{
 	if(Ammo != 0)
 	{
 		Ammo--;
 		AudioComponent->SetSound(Rifle_Shoot_Cue);
 		AudioComponent->Play();
-		ServerFire_Start();
 	}
 	else
 	{
@@ -119,18 +133,28 @@ void AWeapon_Base::ServerFire_Implementation()
 	}
 }
 
-bool AWeapon_Base::ServerFire_Start_Validate()
+bool AWeapon_Base::ServerFire_Start_Validate(class AMain* Actor)
 {
 	return true;
 }
 
-void AWeapon_Base::ServerFire_Start_Implementation()
+void AWeapon_Base::ServerFire_Start_Implementation(class AMain* Actor)
 {
-	FVector Camera_Location = Main->CameraComponent->GetComponentLocation();
-	FVector Start_Vector = UKismetMathLibrary::GetForwardVector(Main->CameraComponent->GetComponentRotation());
+	MultiFire_Start(Actor);
+}
+
+bool AWeapon_Base::MultiFire_Start_Validate(class AMain* Actor)
+{
+	return true;
+}
+
+void AWeapon_Base::MultiFire_Start_Implementation(class AMain* Actor)
+{
+	FVector Camera_Location = Actor->CameraComponent->GetComponentLocation();
+	FVector Start_Vector = UKismetMathLibrary::GetForwardVector(Actor->CameraComponent->GetComponentRotation());
 	FVector StartLocation = (Camera_Location+(Start_Vector*250.f));
 	
-	FVector ForwardVector = UKismetMathLibrary::GetForwardVector(Main->CameraComponent->GetComponentRotation());
+	FVector ForwardVector = UKismetMathLibrary::GetForwardVector(Actor->CameraComponent->GetComponentRotation());
 	FVector EndLocation = (Camera_Location+(ForwardVector * 20000.f));
 
 	GetWorld()->GetFirstPlayerController()->PlayerCameraManager->StartMatineeCameraShake(CameraShake,1.0f,ECameraShakePlaySpace::CameraLocal,FRotator::ZeroRotator);
@@ -139,7 +163,7 @@ void AWeapon_Base::ServerFire_Start_Implementation()
 	
 	FCollisionQueryParams CollisionParams;
 	CollisionParams.AddIgnoredActor(this);
-	CollisionParams.AddIgnoredActor(Main);
+	CollisionParams.AddIgnoredActor(Actor);
 
 	int32 Ground_Random = FMath::RandRange(5,7);
 	FVector Ground_Blood_Size = (FVector(172.f,172.f,172.f));
@@ -152,7 +176,7 @@ void AWeapon_Base::ServerFire_Start_Implementation()
 		FVector Z_Location = OutHit.GetActor()->GetActorLocation();
 		FVector Literal_Location = FVector(Z_Location.X,Z_Location.Y,0.f);
 		
-		GetWorld()->SpawnActor<AProjectile_Base>(Bullet,StartLocation,Main->GetControlRotation());
+		GetWorld()->SpawnActor<AProjectile_Base>(Bullet,StartLocation,Actor->GetControlRotation());
 		if(OutHit.GetActor()->ActorHasTag("Zombie"))
 		{
 			class AZombie_Base* Zombie_Base = Cast<AZombie_Base>(OutHit.GetActor());
@@ -161,10 +185,10 @@ void AWeapon_Base::ServerFire_Start_Implementation()
 				UGameplayStatics::SpawnDecalAtLocation(this,Blood_Decal[Ground_Random],Ground_Blood_Size,Literal_Location,Ground_Blood_Rotate,12.f);
 				Blood_Splatter_Decal(OutHit.ImpactPoint,End_Blood);
 				
-				UGameplayStatics::ApplyDamage(Zombie_Base,Rifle_Damage,nullptr,Main,nullptr);
+				UGameplayStatics::ApplyDamage(Zombie_Base,Rifle_Damage,nullptr,Actor,nullptr);
 				if(OutHit.BoneName.ToString()=="Head")
 				{
-					UGameplayStatics::ApplyPointDamage(OutHit.GetActor(),Rifle_Damage*1.5f,OutHit.GetActor()->GetActorLocation(),OutHit,nullptr,Main,nullptr);
+					UGameplayStatics::ApplyPointDamage(OutHit.GetActor(),Rifle_Damage*1.5f,OutHit.GetActor()->GetActorLocation(),OutHit,nullptr,Actor,nullptr);
 				}
 				if(OutHit.BoneName.ToString()=="thigh_l" || OutHit.BoneName.ToString()=="thigh_r")
 				{
@@ -184,40 +208,47 @@ bool AWeapon_Base::ServerFire_End_Validate()
 void AWeapon_Base::ServerFire_End_Implementation()
 {
 }
-/******************************************************** 서버 ********************************************************/
-void AWeapon_Base::Interact()
+
+bool AWeapon_Base::ServerInteract_Validate(class AMain* Actor)
 {
-	AttachToComponent(Main->GetMesh(),FAttachmentTransformRules::SnapToTargetNotIncludingScale,FName("Rifle_Socket"));
+	return true;
+}
+
+void AWeapon_Base::ServerInteract_Implementation(class AMain* Actor)
+{
+	MultiInteract(Actor);
+}
+
+bool AWeapon_Base::MultiInteract_Validate(class AMain* Actor)
+{
+	return true;
+}
+
+void AWeapon_Base::MultiInteract_Implementation(class AMain* Actor)
+{
+	AttachToComponent(Actor->GetMesh(),FAttachmentTransformRules::SnapToTargetNotIncludingScale,FName("Rifle_Socket"));
 	Body_Mesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	Weapon_Name = "";
 	AudioComponent->SetSound(Pickup_Sound_Cue);
 	AudioComponent->Play();
-	UE_LOG(LogTemp,Warning,TEXT("Weapon Interact"));
+}
+
+/******************************************************** 서버 ********************************************************/
+void AWeapon_Base::Interact(AMain* Actor)
+{
+	if(HasAuthority())
+	{
+		MultiInteract(Actor);
+	}
+	else
+	{
+		ServerInteract(Actor);
+	}
 }
 
 FString AWeapon_Base::Get_Name()
 {
 	return Weapon_Name;
-}
-
-void AWeapon_Base::Fire()
-{
-	if(Ammo != 0)
-	{
-		Ammo--;
-		AudioComponent->SetSound(Rifle_Shoot_Cue);
-		AudioComponent->Play();
-		Fire_Start();
-	}
-	else
-	{
-		AudioComponent->SetSound(Rifle_Empty_Cue);
-		AudioComponent->Play();
-	}
-	if(!HasAuthority())
-	{
-		ServerFire();
-	}
 }
 
 void AWeapon_Base::Blood_Splatter_Decal(FVector Start, FVector End)
@@ -229,7 +260,7 @@ void AWeapon_Base::Blood_Splatter_Decal(FVector Start, FVector End)
 	FHitResult OutHit;
 	FCollisionQueryParams CollisionParams;
 	CollisionParams.AddIgnoredActor(this);
-	CollisionParams.AddIgnoredActor(Main);
+	//CollisionParams.AddIgnoredActor(Main);
 
 	bool IsHit = GetWorld()->LineTraceSingleByChannel(OutHit,Start,End,ECC_Visibility,CollisionParams);
 	if(IsHit)
@@ -239,59 +270,35 @@ void AWeapon_Base::Blood_Splatter_Decal(FVector Start, FVector End)
 	}
 }
 
-void AWeapon_Base::Fire_Start()
+void AWeapon_Base::Fire(class AMain* Actor)
 {
-	FVector Camera_Location = Main->CameraComponent->GetComponentLocation();
-	FVector Start_Vector = UKismetMathLibrary::GetForwardVector(Main->CameraComponent->GetComponentRotation());
-	FVector StartLocation = (Camera_Location+(Start_Vector*250.f));
-	
-	FVector ForwardVector = UKismetMathLibrary::GetForwardVector(Main->CameraComponent->GetComponentRotation());
-	FVector EndLocation = (Camera_Location+(ForwardVector * 20000.f));
-
-	GetWorld()->GetFirstPlayerController()->PlayerCameraManager->StartMatineeCameraShake(CameraShake,1.0f,ECameraShakePlaySpace::CameraLocal,FRotator::ZeroRotator);
-		
-	FHitResult OutHit;
-	
-	FCollisionQueryParams CollisionParams;
-	CollisionParams.AddIgnoredActor(this);
-	CollisionParams.AddIgnoredActor(Main);
-
-	int32 Ground_Random = FMath::RandRange(5,7);
-	FVector Ground_Blood_Size = (FVector(172.f,172.f,172.f));
-	FRotator Ground_Blood_Rotate = FRotator(UKismetMathLibrary::RandomFloatInRange(-45.f,-90.f),0.f,0.f);
-		
-	if(bool Line = GetWorld()->LineTraceSingleByChannel(OutHit,StartLocation,EndLocation,ECC_Visibility,CollisionParams))
+	if(HasAuthority())
 	{
-		FVector End_Blood = (OutHit.ImpactPoint+(Start_Vector*200.f));
-
-		FVector Z_Location = OutHit.GetActor()->GetActorLocation();
-		FVector Literal_Location = FVector(Z_Location.X,Z_Location.Y,0.f);
-		
-		GetWorld()->SpawnActor<AProjectile_Base>(Bullet,StartLocation,Main->GetControlRotation());
-		if(OutHit.GetActor()->ActorHasTag("Zombie"))
+		MultiFire();
+		if(Ammo!=0)
 		{
-			class AZombie_Base* Zombie_Base = Cast<AZombie_Base>(OutHit.GetActor());
-			if(Zombie_Base)
-			{
-				UGameplayStatics::SpawnDecalAtLocation(this,Blood_Decal[Ground_Random],Ground_Blood_Size,Literal_Location,Ground_Blood_Rotate,12.f);
-				Blood_Splatter_Decal(OutHit.ImpactPoint,End_Blood);
-				
-				UGameplayStatics::ApplyDamage(Zombie_Base,Rifle_Damage,nullptr,Main,nullptr);
-				if(OutHit.BoneName.ToString()=="Head")
-				{
-					UGameplayStatics::ApplyPointDamage(OutHit.GetActor(),Rifle_Damage*1.5f,OutHit.GetActor()->GetActorLocation(),OutHit,nullptr,Main,nullptr);
-				}
-				if(OutHit.BoneName.ToString()=="thigh_l" || OutHit.BoneName.ToString()=="thigh_r")
-				{
-					Zombie_Base->Leg_Health-=50.f;
-				}
-			}
+			Fire_Start(Actor);
 		}
-		UNiagaraFunctionLibrary::SpawnSystemAttached(Rifle_Muzzle_Niagara,Body_Mesh,FName("b_gun_muzzleflash"),FVector::ZeroVector,FRotator::ZeroRotator,EAttachLocation::KeepRelativeOffset,true,true);
 	}
-	if(!HasAuthority())
+	else
 	{
-		ServerFire_Start();
+		ServerFire();
+		if(Ammo!=0)
+		{
+			Fire_Start(Actor);
+		}
+	}
+}
+
+void AWeapon_Base::Fire_Start(class AMain* Actor)
+{
+	if(HasAuthority())
+	{
+		MultiFire_Start(Actor);
+	}
+	else
+	{
+		ServerFire_Start(Actor);
 	}
 }
 

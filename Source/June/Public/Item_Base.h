@@ -52,7 +52,7 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	virtual void Interact() override;
+	virtual void Interact(AMain* Actor) override;
 
 	virtual FString Get_Name() override;
 

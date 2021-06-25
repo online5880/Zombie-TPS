@@ -45,7 +45,7 @@ void AItem_Base::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 }
 
-void AItem_Base::Interact()
+void AItem_Base::Interact(AMain* Actor)
 {
 	Add_Item(Item_Data);
 }

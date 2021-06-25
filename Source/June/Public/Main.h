@@ -49,7 +49,6 @@ public:
 
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<AZombie_Base> Zombies;
-
 	/************************ 카메라 ***********************/
 	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category = "Camera")
 	class USpringArmComponent* SpringArmComponent;
@@ -106,8 +105,6 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	/************************ 서버 ************************/
-	//virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-	
 	UFUNCTION(Server,Unreliable,WithValidation)
 	void ServerWalk_Start();
 	bool ServerWalk_Start_Validate();
@@ -128,20 +125,87 @@ public:
 	bool ServerSprint_End_Validate();
 	void ServerSprint_End_Implementation();
 
-	UFUNCTION(Server,reliable,WithValidation)
+	UFUNCTION(Server,Reliable,WithValidation)
 	void ServerInteract();
 	bool ServerInteract_Validate();
 	void ServerInteract_Implementation();
 
-	UFUNCTION(NetMulticast,reliable,WithValidation)
+	UFUNCTION(NetMulticast,Reliable,WithValidation)
 	void MultiInteract();
 	bool MultiInteract_Validate();
 	void MultiInteract_Implementation();
 
-	UFUNCTION(Server,Unreliable,WithValidation)
+	UFUNCTION(Server,Reliable,WithValidation)
 	void ServerEquipRifle();
 	bool ServerEquipRifle_Validate();
 	void ServerEquipRifle_Implementation();
+
+	UFUNCTION(NetMulticast,Reliable,WithValidation)
+	void MultiEquipRifle();
+	bool MultiEquipRifle_Validate();
+	void MultiEquipRifle_Implementation();
+
+	UFUNCTION(Server,Reliable,WithValidation)
+	void ServerUnEquipRifle();
+	bool ServerUnEquipRifle_Validate();
+	void ServerUnEquipRifle_Implementation();
+
+	UFUNCTION(NetMulticast,Reliable,WithValidation)
+	void MultiUnEquipRifle();
+	bool MultiUnEquipRifle_Validate();
+	void MultiUnEquipRifle_Implementation();
+
+	UFUNCTION(Server,Reliable,WithValidation)
+	void ServerAiming(bool ServerAiming);
+	bool ServerAiming_Validate(bool ServerAiming);
+	void ServerAiming_Implementation(bool ServerAiming);
+
+	UFUNCTION(NetMulticast,Reliable,WithValidation)
+	void MultiAiming(bool MultiAiming);
+	bool MultiAiming_Validate(bool MultiAiming);
+	void MultiAiming_Implementation(bool MultiAiming);
+
+	UFUNCTION(Server,Reliable,WithValidation)
+	void ServerAiming_End(bool ServerAiming);
+	bool ServerAiming_End_Validate(bool ServerAiming);
+	void ServerAiming_End_Implementation(bool ServerAiming);
+
+	UFUNCTION(NetMulticast,Reliable,WithValidation)
+	void MultiAiming_End(bool MultiAiming);
+	bool MultiAiming_End_Validate(bool MultiAiming);
+	void MultiAiming_End_Implementation(bool MultiAiming);
+
+	UFUNCTION(Server,Reliable,WithValidation)
+	void ServerFire(bool bServerFire);
+	bool ServerFire_Validate(bool bServerFire);
+	void ServerFire_Implementation(bool bServerFire);
+
+	UFUNCTION(NetMulticast,Reliable,WithValidation)
+	void MultiFire(bool bMultiFire);
+	bool MultiFire_Validate(bool bMultiFire);
+	void MultiFire_Implementation(bool bMultiFire);
+
+	UFUNCTION(Server,Reliable,WithValidation)
+	void ServerFire_Start();
+	bool ServerFire_Start_Validate();
+	void ServerFire_Start_Implementation();
+
+	UFUNCTION(NetMulticast,Reliable,WithValidation)
+	void MultiFire_Start();
+	bool MultiFire_Start_Validate();
+	void MultiFire_Start_Implementation();
+
+	UFUNCTION(Server,Reliable,WithValidation)
+	void ServerFire_End();
+	bool ServerFire_End_Validate();
+	void ServerFire_End_Implementation();
+
+	UFUNCTION(NetMulticast,Reliable,WithValidation)
+	void MultiFire_End();
+	bool MultiFire_End_Validate();
+	void MultiFire_End_Implementation();
+
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	/************************ 행동 ************************/
 	UFUNCTION()
 	void MoveForward(float Value); ////// 속도
@@ -187,6 +251,7 @@ public:
 	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category = "Inventory")
 	int32 Inventory_Capacity;
 	/************************ 무기 ************************/
+	UPROPERTY(Replicated)
 	bool bFire;
 	
 	UFUNCTION()
@@ -212,10 +277,8 @@ public:
 	UPROPERTY(BlueprintReadOnly)
 	bool bReloading;
 
-	UPROPERTY(BlueprintReadOnly)
+	UPROPERTY(BlueprintReadOnly,Replicated)
 	bool bAiming;
-	
-	void UnEquip(); // 무기 넣기
 
 	UPROPERTY(BlueprintReadOnly)
 	class AWeapon_Base* Weapon_Base;
@@ -243,6 +306,8 @@ public:
 	UAnimMontage* Die_Montage; /// 죽는 모션
 	/************************ 라이플 ************************/
 	void Equip_Rifle(); // 라이플 장착
+
+	void UnEquip(); // 무기 넣기
 
 	UPROPERTY(EditAnywhere,BlueprintReadOnly,Replicated)
 	bool bEquip_Rifle; // 라이플 장착 확인
