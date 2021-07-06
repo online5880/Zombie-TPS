@@ -10,6 +10,8 @@ UZombie_AnimInstance::UZombie_AnimInstance()
 {
 	MovementSpeed = 0.f;
 	bIsAir = false;
+	
+	Random_Ground = UKismetMathLibrary::RandomIntegerInRange(0,1);
 }
 
 void UZombie_AnimInstance::NativeInitializeAnimation()
@@ -36,8 +38,6 @@ void UZombie_AnimInstance::UpdateAnimationProperties()
 		FVector LateralSpeed = FVector(Speed.X,Speed.Y,0.f);
 		MovementSpeed = LateralSpeed.Size();
 		bDamaged_Leg = Zombie->bDamaged_Leg;
-
-		Random_Ground = UKismetMathLibrary::RandomIntegerInRange(0,1);
 
 		bIsAir = Pawn->GetMovementComponent()->IsFalling();
 	}

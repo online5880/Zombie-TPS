@@ -45,51 +45,6 @@ public:
 	
 	AMain();
 
-	class AZombie_Base* Zombie_Base;
-
-	UPROPERTY(EditAnywhere)
-	TSubclassOf<AZombie_Base> Zombies;
-	/************************ 카메라 ***********************/
-	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category = "Camera")
-	class USpringArmComponent* SpringArmComponent;
-
-	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category = "Camera")
-	class UCameraComponent* CameraComponent;
-	/**************************** 몸 ***********************/
-	UPROPERTY(EditAnywhere,BlueprintReadOnly, Category = "Body")
-	class USkeletalMeshComponent* Body_Mesh;
-
-	class UAIPerceptionStimuliSourceComponent* AIPerceptionStimuliSourceComponent;
-	/**************************** 사운드 ***********************/
-	class UAudioComponent* AudioComponent;
-
-	class USoundCue* React_Cue;
-	/************************ 스탯 / 상태***********************/
-	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category = "State")
-	EWeaponState Weapon_State;
-
-	EWeaponState Get_Weapon_State() const 	{ return Weapon_State; }
-
-	void Set_Weapon_State(EWeaponState Set_State)	{ this->Weapon_State = Set_State; }
-
-	EState State;
-
-	EState Get_State() const { return State; }
-
-	void SetState(EState Set_State) { this->State = Set_State;	}
-
-	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category = "Stats")
-	float Health;
-	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category = "Stats")
-	float MaxHealth;
-
-	void Die();
-
-	UPROPERTY(BlueprintReadOnly)
-	bool bDie;
-
-	FGenericTeamId TeamId;
-
 	virtual FGenericTeamId GetGenericTeamId() const override;
 
 	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
@@ -98,12 +53,6 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
-
-	// Called to bind functionality to input
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	/************************ 서버 ************************/
 	UFUNCTION(Server,Unreliable,WithValidation)
 	void ServerWalk_Start();
@@ -238,22 +187,10 @@ public:
 
 	void LineTrace(); /// 라인트레이스
 
-	UFUNCTION(BlueprintImplementableEvent)
-	void Get_Actor_Name(const FText& Text); /// 액터 이름 얻어오기
-
 	bool bTextCleard;
 
 	void Interact(); // 상호작용
 
-	UPROPERTY(BlueprintReadOnly)
-	bool bFocus;
-	/************************ 인벤토리 ************************/
-	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category = "Inventory")
-	int32 Inventory_Capacity;
-	/************************ 무기 ************************/
-	UPROPERTY(Replicated)
-	bool bFire;
-	
 	UFUNCTION()
 	void Fire();
 
@@ -274,14 +211,58 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void Reload_End();
 
-	UPROPERTY(BlueprintReadOnly)
-	bool bReloading;
+	void Throw_Ready();
 
-	UPROPERTY(BlueprintReadOnly,Replicated)
-	bool bAiming;
+	void Throw();
 
-	UPROPERTY(BlueprintReadOnly)
-	class AWeapon_Base* Weapon_Base;
+	UFUNCTION(BlueprintCallable)
+	void Spawn_Grenade();
+
+	void Equip_Rifle(); // 라이플 장착
+
+	void UnEquip(); // 무기 넣기
+
+	void Die();
+
+private:
+	class AZombie_Base* Zombie_Base;
+	
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<AZombie_Base> Zombies;
+	/************************ 카메라 ***********************/
+	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category = "Camera", meta = (AllowPrivateAccess = true))
+	class USpringArmComponent* SpringArmComponent;
+
+	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category = "Camera", meta = (AllowPrivateAccess = true))
+	class UCameraComponent* CameraComponent;
+	/**************************** 몸 ***********************/
+	UPROPERTY(EditAnywhere,BlueprintReadOnly, Category = "Body", meta = (AllowPrivateAccess = true))
+	class USkeletalMeshComponent* Body_Mesh;
+
+	class UAIPerceptionStimuliSourceComponent* AIPerceptionStimuliSourceComponent;
+	/**************************** 사운드 ***********************/
+	class UAudioComponent* AudioComponent;
+
+	class USoundCue* React_Cue;
+	/************************ 스탯 / 상태***********************/
+	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category = "State", meta = (AllowPrivateAccess = true))
+	EWeaponState Weapon_State;
+
+	EState State;
+
+	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category = "Stats", meta = (AllowPrivateAccess = true))
+	float Health;
+	
+	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category = "Stats", meta = (AllowPrivateAccess = true))
+	float MaxHealth;
+
+	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = true))
+	bool bDie;
+
+	FGenericTeamId TeamId;
+
+	UPROPERTY(BlueprintReadOnly,meta = (AllowPrivateAccess = true))
+	bool bFocus;
 	/************************ 애니메이션 ************************/
 	class UMain_AnimInstance* AnimInstance;
 	
@@ -304,28 +285,61 @@ public:
 	UAnimMontage* React_Montage; /// 피격 모션
 
 	UAnimMontage* Die_Montage; /// 죽는 모션
+	/************************ 인벤토리 ************************/
+	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category = "Inventory",meta = (AllowPrivateAccess = true))
+	int32 Inventory_Capacity;
+	/************************ 무기 ************************/
+	UPROPERTY(Replicated)
+	bool bFire;
+
+	UPROPERTY(BlueprintReadOnly,meta = (AllowPrivateAccess = true))
+	bool bReloading;
+
+	UPROPERTY(BlueprintReadOnly,Replicated,meta = (AllowPrivateAccess = true))
+	bool bAiming;
+
+	UPROPERTY(BlueprintReadOnly,meta = (AllowPrivateAccess = true))
+	class AWeapon_Base* Weapon_Base;
+	
 	/************************ 라이플 ************************/
-	void Equip_Rifle(); // 라이플 장착
-
-	void UnEquip(); // 무기 넣기
-
-	UPROPERTY(EditAnywhere,BlueprintReadOnly,Replicated)
+	UPROPERTY(EditAnywhere,BlueprintReadOnly,Replicated,meta = (AllowPrivateAccess = true))
 	bool bEquip_Rifle; // 라이플 장착 확인
 
 	FTimerHandle Rifle_Timer;
 
 	FTimerHandle Rifle_Fire_Timer;
 	/************************ 수류탄 ************************/
-	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category = "Weapon")
+	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category = "Weapon",meta = (AllowPrivateAccess = true))
 	TSubclassOf<AGrenade> Grenade;
 
-	UPROPERTY(BlueprintReadOnly)
+	UPROPERTY(BlueprintReadOnly,meta = (AllowPrivateAccess = true))
 	bool bIsGrenade;
+	
+public:	
+	// Called every frame
+	virtual void Tick(float DeltaTime) override;
 
-	void Throw_Ready();
+	// Called to bind functionality to input
+	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-	void Throw();
+	USpringArmComponent* GetSpringArm() const {return SpringArmComponent;}
 
-	UFUNCTION(BlueprintCallable)
-	void Spawn_Grenade();
+	UCameraComponent* GetCamera() const {return CameraComponent;}
+	
+	UFUNCTION(BlueprintImplementableEvent)
+	void Get_Actor_Name(const FText& Text); /// 액터 이름 얻어오기
+	
+	EWeaponState Get_Weapon_State() const 	{ return Weapon_State; }
+
+	void Set_Weapon_State(EWeaponState Set_State)	{ this->Weapon_State = Set_State; }
+
+	EState Get_State() const { return State; }
+
+	void SetState(EState Set_State) { this->State = Set_State;}
+
+	bool GetAiming() const {return bAiming;}
+
+	bool GetDie() const {return bDie;}
+
+	float GetHealth() const {return Health;}
 };

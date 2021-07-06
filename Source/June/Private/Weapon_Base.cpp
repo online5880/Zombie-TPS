@@ -150,11 +150,11 @@ bool AWeapon_Base::MultiFire_Start_Validate(class AMain* Actor)
 
 void AWeapon_Base::MultiFire_Start_Implementation(class AMain* Actor)
 {
-	FVector Camera_Location = Actor->CameraComponent->GetComponentLocation();
-	FVector Start_Vector = UKismetMathLibrary::GetForwardVector(Actor->CameraComponent->GetComponentRotation());
+	FVector Camera_Location = Actor->GetCamera()->GetComponentLocation();
+	FVector Start_Vector = UKismetMathLibrary::GetForwardVector(Actor->GetCamera()->GetComponentRotation());
 	FVector StartLocation = (Camera_Location+(Start_Vector*250.f));
 	
-	FVector ForwardVector = UKismetMathLibrary::GetForwardVector(Actor->CameraComponent->GetComponentRotation());
+	FVector ForwardVector = UKismetMathLibrary::GetForwardVector(Actor->GetCamera()->GetComponentRotation());
 	FVector EndLocation = (Camera_Location+(ForwardVector * 20000.f));
 
 	GetWorld()->GetFirstPlayerController()->PlayerCameraManager->StartMatineeCameraShake(CameraShake,1.0f,ECameraShakePlaySpace::CameraLocal,FRotator::ZeroRotator);

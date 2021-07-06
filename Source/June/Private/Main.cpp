@@ -734,7 +734,7 @@ void AMain::Reload()
 		switch (Weapon_State)
 		{
 		case EWeaponState::Rifle:
-			if(Weapon_Base->Ammo != Weapon_Base->MaxAmmo && Weapon_Base->HaveAmmo != 0)
+			if(Weapon_Base->GetAmmo() != Weapon_Base->GetMaxAmmo() && Weapon_Base->GetHaveAmmo() != 0)
 			{
 				if(!bFire && !bAiming && !bReloading)
 				{

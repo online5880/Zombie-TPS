@@ -6,14 +6,14 @@
 
 void UBase_GameInstacne::Add_Inventory(FItem_Data_Struct Item)
 {
-	GEngine->AddOnScreenDebugMessage(-1,1.5f,FColor::Red,FString::Printf(TEXT("GameInstance Add Item"),false));
+	//GEngine->AddOnScreenDebugMessage(-1,1.5f,FColor::Red,FString::Printf(TEXT("GameInstance Add Item"),false));
 	for(int i = 0 ; i< Inventory_Item.Num();i++)
 	{
 		FItem_Data_Struct Item_Temp = Inventory_Item[i];
 		{
 			if(Item == Item_Temp)
 			{
-				GEngine->AddOnScreenDebugMessage(-1,1.5f,FColor::Red,FString::Printf(TEXT("GameInstance Item 중복"),false));
+				//GEngine->AddOnScreenDebugMessage(-1,1.5f,FColor::Red,FString::Printf(TEXT("GameInstance Item 중복"),false));
 				Item.bStack = true;
 				Item.Quantity++;
 				Item.bFilled = false;

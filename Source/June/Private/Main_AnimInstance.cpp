@@ -47,16 +47,15 @@ void UMain_AnimInstance::UpdateAnimationProperties()
 		Pitch = Offset_Rot.Pitch;
 		MovementSpeed = LateralSpeed.Size();
 		Direction = CalculateDirection(Speed,Pawn->GetActorRotation());
-		bAiming = Main->bAiming;
-		Controller_Yaw = Pawn->GetControlRotation().Pitch;
+		bAiming = Main->GetAiming();
 		if(bAiming)
 		{
-			MultiController_Yaw(Controller_Yaw);
+			Controller_Yaw = Pawn->GetControlRotation().Pitch;
 		}
 		else
 		{
 			Controller_Yaw = 0.f;
-			MultiController_Yaw(0.f);
+			//MultiController_Yaw(0.f);
 		}
 		bIsAir = Pawn->GetMovementComponent()->IsFalling();
 	}

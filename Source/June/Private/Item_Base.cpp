@@ -73,11 +73,12 @@ void AItem_Base::Remove_Item(FItem_Data_Struct Item)
 
 void AItem_Base::Use(AMain* Character)
 {
+	float Health = Character->GetHealth();
 	switch (Item_Type)
 	{
 	case 0:
 		GEngine->AddOnScreenDebugMessage(-1,1.5f,FColor::Red,FString::Printf(TEXT("아이템 1"),false));
-		Character->Health += 30.f;
+		Health += 30.f;
 		break;
 	case 1:
 		GEngine->AddOnScreenDebugMessage(-1,1.5f,FColor::Red,FString::Printf(TEXT("아이템 2"),false));
