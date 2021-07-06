@@ -191,6 +191,10 @@ protected:
 
 	void Interact(); // 상호작용
 
+	void Equip_Weapon(class AWeapon_Base* WeaponToEquip);
+
+	class AWeapon_Base* SpawnDefaultWeapon();
+
 	UFUNCTION()
 	void Fire();
 
@@ -229,6 +233,9 @@ private:
 	
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<AZombie_Base> Zombies;
+
+	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly,Category = "Combat",meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<AWeapon_Base> DefaultWeaponClass;
 	/************************ 카메라 ***********************/
 	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category = "Camera", meta = (AllowPrivateAccess = true))
 	class USpringArmComponent* SpringArmComponent;
@@ -298,8 +305,8 @@ private:
 	UPROPERTY(BlueprintReadOnly,Replicated,meta = (AllowPrivateAccess = true))
 	bool bAiming;
 
-	UPROPERTY(BlueprintReadOnly,meta = (AllowPrivateAccess = true))
-	class AWeapon_Base* Weapon_Base;
+	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,meta = (AllowPrivateAccess = true))
+	class AWeapon_Base* EquippedWeapon;
 	
 	/************************ 라이플 ************************/
 	UPROPERTY(EditAnywhere,BlueprintReadOnly,Replicated,meta = (AllowPrivateAccess = true))

@@ -177,6 +177,7 @@ void AWeapon_Base::MultiFire_Start_Implementation(class AMain* Actor)
 		FVector Literal_Location = FVector(Z_Location.X,Z_Location.Y,0.f);
 		
 		GetWorld()->SpawnActor<AProjectile_Base>(Bullet,StartLocation,Actor->GetControlRotation());
+		
 		if(OutHit.GetActor()->ActorHasTag("Zombie"))
 		{
 			class AZombie_Base* Zombie_Base = Cast<AZombie_Base>(OutHit.GetActor());

@@ -13,6 +13,7 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Components/AudioComponent.h"
+#include "Engine/SkeletalMeshSocket.h"
 #include "Net/UnrealNetwork.h"
 #include "Perception/AISense_Hearing.h"
 #include "Sound/SoundCue.h"
@@ -104,9 +105,9 @@ void AMain::BeginPlay()
 {
 	Super::BeginPlay();
 
-	AnimInstance = Cast<UMain_AnimInstance>(GetMesh()->GetAnimInstance());
+	Equip_Weapon(SpawnDefaultWeapon());
 
-	Set_Weapon_State(EWeaponState::Normal);
+	AnimInstance = Cast<UMain_AnimInstance>(GetMesh()->GetAnimInstance());
 
 	Zombie_Base = Cast<AZombie_Base>(UGameplayStatics::GetActorOfClass(GetWorld(),Zombies));
 }
@@ -250,19 +251,19 @@ void AMain::MultiEquipRifle_Implementation()
 	{
 		if(Rifle == UKismetSystemLibrary::GetDisplayName(Actor))
 		{
-			Weapon_Base = Cast<AWeapon_Base>(Actor);
+			EquippedWeapon = Cast<AWeapon_Base>(Actor);
 			break;
 		}
 	}
 	
 	if(AnimInstance)
 	{
-		if(!AnimInstance->IsAnyMontagePlaying() && Weapon_Base && !(Get_Weapon_State() == EWeaponState::Rifle))
+		if(!AnimInstance->IsAnyMontagePlaying() && EquippedWeapon && !(Get_Weapon_State() == EWeaponState::Rifle))
 		{
 			AnimInstance->Montage_Play(Equip_Rifle_Montage);			
 			GetWorld()->GetTimerManager().SetTimer(Rifle_Timer,[this]()
 			{
-				Weapon_Base->AttachToComponent(GetMesh(),FAttachmentTransformRules::SnapToTargetIncludingScale,FName("Weapon_Socket"));
+				EquippedWeapon->AttachToComponent(GetMesh(),FAttachmentTransformRules::SnapToTargetIncludingScale,FName("Weapon_Socket"));
 				Set_Weapon_State(EWeaponState::Rifle);
 			},0.5f,false);
 		}
@@ -294,12 +295,12 @@ void AMain::MultiUnEquipRifle_Implementation()
 	{
 		if(Rifle == UKismetSystemLibrary::GetDisplayName(Actor))
 		{
-			Weapon_Base = Cast<AWeapon_Base>(Actor);
+			EquippedWeapon = Cast<AWeapon_Base>(Actor);
 			break;
 		}
 	}
 	
-	if(!AnimInstance->IsAnyMontagePlaying() && Weapon_Base && !(Get_Weapon_State() == EWeaponState::Normal))
+	if(!AnimInstance->IsAnyMontagePlaying() && EquippedWeapon && !(Get_Weapon_State() == EWeaponState::Normal))
 	{
 		switch (Weapon_State)
 		{
@@ -307,7 +308,7 @@ void AMain::MultiUnEquipRifle_Implementation()
 			AnimInstance->Montage_Play(UnEquip_Rifle_Montage);
 			GetWorld()->GetTimerManager().SetTimer(Rifle_Timer,[this]()
 			{
-				Weapon_Base->AttachToComponent(GetMesh(),FAttachmentTransformRules::SnapToTargetIncludingScale,FName("Rifle_Socket"));
+				EquippedWeapon->AttachToComponent(GetMesh(),FAttachmentTransformRules::SnapToTargetIncludingScale,FName("Rifle_Socket"));
 			},1.1f,false);
 			Set_Weapon_State(EWeaponState::Normal);
 			break;
@@ -337,7 +338,7 @@ void AMain::MultiAiming_Implementation(bool MultiAiming)
 		switch (Weapon_State)
 		{
 		case EWeaponState::Rifle:
-			if(!AnimInstance->IsAnyMontagePlaying() && Weapon_Base && !bAiming && !bReloading && !bIsGrenade)
+			if(!AnimInstance->IsAnyMontagePlaying() && EquippedWeapon && !bAiming && !bReloading && !bIsGrenade)
 			{
 				AnimInstance->Montage_Play(Rifle_Aiming_Montage);
 				bAiming = true;
@@ -387,7 +388,7 @@ void AMain::MultiFire_Implementation(bool bMultiFire)
 {
 	if(bMultiFire)
 	{
-		Weapon_Base->Fire(this);
+		EquippedWeapon->Fire(this);
 		UAISense_Hearing::ReportNoiseEvent(GetWorld(),GetActorLocation(),1.f,this,0.f,FName("Weapon Noise"));
 		GetWorld()->GetTimerManager().SetTimer(Rifle_Fire_Timer,this,&AMain::Fire,0.1f,false);
 	}
@@ -577,8 +578,23 @@ void AMain::Interact()
 	}
 }
 
+void AMain::Equip_Weapon(AWeapon_Base* WeaponToEquip)
+{
+	if(WeaponToEquip)
+	{
+		const USkeletalMeshSocket* HandSocket = GetMesh()->GetSocketByName(FName("Weapon_Socket"));
+		
+		if(HandSocket)
+		{
+			HandSocket->AttachActor(WeaponToEquip,GetMesh());
+		}
+		EquippedWeapon = WeaponToEquip;
+		Weapon_State = EWeaponState::Rifle;
+	}
+}
+
 float AMain::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator,
-	AActor* DamageCauser)
+                        AActor* DamageCauser)
 {
 	Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 
@@ -666,6 +682,15 @@ void AMain::Die()
 	}
 }
 
+AWeapon_Base* AMain::SpawnDefaultWeapon()
+{
+	if(DefaultWeaponClass)
+	{
+		return GetWorld()->SpawnActor<AWeapon_Base>(DefaultWeaponClass);
+	}
+	return nullptr;
+}
+
 /******************************************************** 라이플 ********************************************************/
 void AMain::Fire()
 {
@@ -734,12 +759,12 @@ void AMain::Reload()
 		switch (Weapon_State)
 		{
 		case EWeaponState::Rifle:
-			if(Weapon_Base->GetAmmo() != Weapon_Base->GetMaxAmmo() && Weapon_Base->GetHaveAmmo() != 0)
+			if(EquippedWeapon->GetAmmo() != EquippedWeapon->GetMaxAmmo() && EquippedWeapon->GetHaveAmmo() != 0)
 			{
 				if(!bFire && !bAiming && !bReloading)
 				{
 					AnimInstance->Montage_Play(Rifle_Relaoding_Montage);
-					Weapon_Base->Reload();
+					EquippedWeapon->Reload();
 					bReloading = true;
 				}
 			}
@@ -751,7 +776,7 @@ void AMain::Reload_End()
 {
 	bReloading = false;
 	AnimInstance->Montage_Stop(0.2f,Rifle_Relaoding_Montage);
-	Weapon_Base->Reload_End();
+	EquippedWeapon->Reload_End();
 }
 
 void AMain::UnEquip()
