@@ -89,7 +89,7 @@ private:
 
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,Replicated,Category = "Weapon", meta = (AllowPrivateAccess = true))
 	int32 Ammo;
-private:
+	
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,Replicated,Category = "Weapon", meta = (AllowPrivateAccess = true))
 	int32 MaxAmmo;
 
@@ -140,6 +140,5 @@ public:
 	int32 GetMaxAmmo() const	{	return MaxAmmo;	}
 
 	int32 GetHaveAmmo() const	{	return HaveAmmo; }
-
 
 };
