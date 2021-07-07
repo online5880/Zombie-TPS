@@ -34,8 +34,6 @@ AZombie_Base::AZombie_Base()
 	AudioComponent->SetupAttachment(RootComponent);
 	
 	Tags.Add("Zombie");
-
-	SetReplicates(true);
 	/************************ 애니메이션 ***********************/
 	static ConstructorHelpers::FObjectFinder<UAnimMontage>
 	React(TEXT("AnimMontage'/Game/Zombies/Zombie_1/Anim/Anim_Zombie_hit_Montage.Anim_Zombie_hit_Montage'"));
@@ -88,9 +86,16 @@ void AZombie_Base::BeginPlay()
 
 	Zombie_AIController = Cast<AZombie_AIController>(GetController());
 	AnimInstance = Cast<UZombie_AnimInstance>(GetMesh()->GetAnimInstance());
+
+	FString Level_Name = "Demo";
+
 	
-	AudioComponent->SetSound(Idle_Sound);
-	AudioComponent->Play();
+
+	if(Level_Name.Equals(UGameplayStatics::GetCurrentLevelName(GetWorld(),true)))
+	{
+		AudioComponent->SetSound(Idle_Sound);
+		AudioComponent->Play();
+	}
 }
 
 // Called every frame
