@@ -18,6 +18,7 @@ public class June : ModuleRules
 			"AIModule",
 			"GameplayTasks",
 			"NavigationSystem",
+			"UMG"
 		});
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });

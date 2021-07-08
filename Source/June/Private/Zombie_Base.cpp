@@ -87,11 +87,9 @@ void AZombie_Base::BeginPlay()
 	Zombie_AIController = Cast<AZombie_AIController>(GetController());
 	AnimInstance = Cast<UZombie_AnimInstance>(GetMesh()->GetAnimInstance());
 
-	FString Level_Name = "Demo";
+	FString Level_Name = "MainMenu";
 
-	
-
-	if(Level_Name.Equals(UGameplayStatics::GetCurrentLevelName(GetWorld(),true)))
+	if(!Level_Name.Equals(UGameplayStatics::GetCurrentLevelName(GetWorld(),true)))
 	{
 		AudioComponent->SetSound(Idle_Sound);
 		AudioComponent->Play();
@@ -251,7 +249,7 @@ void AZombie_Base::Die()
 	GetWorld()->GetTimerManager().SetTimer(Destroy_Timer,[this]()
 	{
 		Destroy();
-		GetWorld()->GetTimerManager().ClearTimer(Destroy_Timer);
+		//GetWorld()->GetTimerManager().ClearTimer(Destroy_Timer);
 	},10.f,false);
 }
 
@@ -263,7 +261,7 @@ void AZombie_Base::Ragdoll(float Time)
 		GetMesh()->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
 		GetMesh()->SetSimulatePhysics(true);
 		GetMesh()->SetCollisionObjectType(ECC_PhysicsBody);
-		GetWorld()->GetTimerManager().ClearTimer(Ragdoll_Timer);
+		//GetWorld()->GetTimerManager().ClearTimer(Ragdoll_Timer);
 	},Time,false);
 }
 

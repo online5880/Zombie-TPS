@@ -228,6 +228,11 @@ protected:
 
 	void Die();
 
+	UFUNCTION(BlueprintCallable)
+	void Respawn();
+
+	void Menu();
+
 private:
 	class AZombie_Base* Zombie_Base;
 	
@@ -321,6 +326,18 @@ private:
 
 	UPROPERTY(BlueprintReadOnly,meta = (AllowPrivateAccess = true))
 	bool bIsGrenade;
+
+	class UUserWidget* Respawn_Widget;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Widget",meta = (AllowPrivateAccess = true))
+	TSubclassOf<UUserWidget> GetRespawn_Widget;
+
+	class UUserWidget* Menu_Widget;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Widget",meta = (AllowPrivateAccess = true))
+	TSubclassOf<UUserWidget> GetMenu__Widget;
+
+	bool bOpenMenu;
 	
 public:	
 	// Called every frame

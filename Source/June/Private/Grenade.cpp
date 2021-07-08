@@ -39,7 +39,7 @@ void AGrenade::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPri
 		FTimerHandle Noise_Timer;
 		GetWorld()->GetTimerManager().SetTimer(Noise_Timer,[this]()
 		{
-			UAISense_Hearing::ReportNoiseEvent(GetWorld(),GetActorLocation(),1.f,this,0.f,FName("Weapon Noise"));
+			//UAISense_Hearing::ReportNoiseEvent(GetWorld(),GetActorLocation(),1.f,this,0.f,FName("Weapon Noise"));
 		},0.9f,false);
 	}
 }

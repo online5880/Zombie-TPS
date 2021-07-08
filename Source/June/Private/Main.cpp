@@ -16,6 +16,8 @@
 #include "Engine/SkeletalMeshSocket.h"
 #include "Net/UnrealNetwork.h"
 #include "Perception/AISense_Hearing.h"
+#include "Blueprint/UserWidget.h"
+#include "Blueprint/WidgetBlueprintLibrary.h"
 #include "Sound/SoundCue.h"
 
 // Sets default values
@@ -29,6 +31,8 @@ AMain::AMain()
 	bFocus = false;
 	bWalking = false;
 	bIsGrenade = false;
+
+	bOpenMenu = false;
 	
 	SpringArmComponent = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
 	SpringArmComponent->SetupAttachment(RootComponent);
@@ -152,6 +156,7 @@ void AMain::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 	PlayerInputComponent->BindAction("Sprint",IE_Released,this,&AMain::Sprint_End);
 	PlayerInputComponent->BindAction("Rifle",IE_Released,this,&AMain::Equip_Rifle);
 	PlayerInputComponent->BindAction("UnEquip",IE_Released,this,&AMain::UnEquip);
+	PlayerInputComponent->BindAction("Menu",IE_Released,this,&AMain::Menu);
 
 	PlayerInputComponent->BindAxis("MoveForward",this,&AMain::MoveForward);
 	PlayerInputComponent->BindAxis("MoveRight",this,&AMain::MoveRight);
@@ -679,6 +684,31 @@ void AMain::Die()
 			AnimInstance->Montage_JumpToSection(FName("Death_4"),Die_Montage);
 		}
 		GetMesh()->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
+	}
+	Respawn_Widget = CreateWidget<UUserWidget>(GetWorld(),GetRespawn_Widget);
+	Respawn_Widget->AddToViewport();
+	UGameplayStatics::GetPlayerController(GetWorld(),0)->SetShowMouseCursor(true);
+	UWidgetBlueprintLibrary::SetInputMode_UIOnlyEx(UGameplayStatics::GetPlayerController(GetWorld(),0));
+}
+
+void AMain::Respawn()
+{
+	Health = 100.f;
+	SetState(EState::Normal);
+	GetMesh()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	UGameplayStatics::OpenLevel(GetWorld(),FName(TEXT("MainMenu")));
+}
+
+void AMain::Menu()
+{
+	FString Level_Name = "MainMenu";
+
+	if(!Level_Name.Equals(UGameplayStatics::GetCurrentLevelName(GetWorld(),true)))
+	{
+		Menu_Widget = CreateWidget<UUserWidget>(GetWorld(),GetMenu__Widget);
+		Menu_Widget->AddToViewport();
+		UGameplayStatics::GetPlayerController(GetWorld(),0)->SetShowMouseCursor(true);
+		UWidgetBlueprintLibrary::SetInputMode_UIOnlyEx(UGameplayStatics::GetPlayerController(GetWorld(),0));
 	}
 }
 
